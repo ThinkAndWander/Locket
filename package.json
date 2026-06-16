@@ -1,0 +1,31 @@
+{
+	"name": "locket_game",
+	"private": "true",
+	"version": "1.0.0",
+	"description": "A cozy slice-of-life adventure where you find the meaning of life by living.",
+	"author": "ThinkAndWander",
+	"license": "MIT",
+	"homepage": "",
+	"type": "module",
+	"main": "main.js",
+	"icon": "path.join(__dirname, 'icon.ico')",
+	"scripts": {
+		"build": "bash ./compile_mainapp.sh",
+		"deploy-files": "bash ./deploy_files.sh"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/ThinkAndWander/Locket.git"
+	},
+	"devDependencies": {
+		"@rollup/plugin-node-resolve": "^15.1.0",
+		"rollup": "^2.79.1",
+		"rollup-plugin-sourcemaps": "^0.6.3",
+		"terser": "^5.19.2",
+		"typescript": "^5.4.5"
+	},
+	"dependencies": {
+		"@types/jquery": "^3.5.5",
+		"imperative-html": "^0.1.0"
+	}
+}

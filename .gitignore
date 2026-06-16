@@ -1,0 +1,12 @@
+.dropbox
+.DS_Store
+.vs
+/node_modules
+/website/**/mainapp*.js
+/website/**/mainapp*.js.map
+/mainapp/*.js
+/mainapp/*.js.map
+/**/*.ts.bak
+/**/*.html.bak
+/build
+/to_deploy/
