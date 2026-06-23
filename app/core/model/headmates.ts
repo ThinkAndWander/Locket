@@ -2,18 +2,19 @@ import { system } from "./system"
 import { stat } from "./stats"
 import { skill } from './skills'
 import { attribute } from './attributes'
+import { pronounSet } from "./pronouns"
 
 /** When most things change, these are re-evaluated and anything that would be triggered is then evaluated, in order.
- * This is used to simulate natural changes in mood and other side effects.
+ * This is used to simulate natural changes in emotion and other side effects.
 */
 type triggers = {
     statChanges: { [key in keyof typeof stat]?: onTrigger }
     skillChanges: { [key in keyof typeof skill]?: onTrigger }
     attributeChanges: { [key in keyof typeof attribute]?: onTrigger }
-    moodChanges: { [key in keyof typeof mood]?: onTrigger }
-    personJoins: { [key: headmate]: onTrigger }
-    personLeaves: { [key: headmate]: onTrigger }
-    frontBlockedBy: { [key: headmate]: onTrigger }
+    emotionChanges: { [key in keyof typeof emotion]?: onTrigger }
+    personJoins: [headmate, onTrigger][]
+    personLeaves: [headmate, onTrigger][]
+    frontBlockedBy: [headmate, onTrigger][]
 }
 
 /** When an event would trigger, it only does so based on the trigger chance. If it does, then all other chances are
@@ -32,15 +33,15 @@ type onTrigger = {
         /** Stops fronting. If this leaves no fronting headmates, another is chosen by sensible criteria. */
         forceDormant?: boolean
 
-        /** Adds a modifier to the given mood, clamped to fit 0-1 range. */
-        adjustMood: { [key in keyof typeof mood]: number }
+        /** Adds a modifier to the given emotion, clamped to fit 0-1 range. */
+        adjustMood: { [key in keyof typeof emotion]: number }
     }
 }
 
 /** How much the headmate wants or is willing to front is a factored decision. 0.5 is neutral. When this value >= 0.75,
  * the headmate would front. If 1, the headmate fronts unless they have no fronting behavior. If <= 0.25, the headmate
- * would stop fronting. If 0, the headmate immediately stops fronting and others are evaluated  */
-type frontingInterest = {
+ * would stop fronting. If 0, the headmate immediately stops fronting and others are evaluated. */
+type frontInterest = {
     /** A base interest in fronting as a value from 0-1. */
     desireToFront: number
 
@@ -107,20 +108,23 @@ export type headmate = {
     /** How this headmate interacts with other headmates. */
     frontInteraction: frontingInteraction
 
-    /** An event-triggered system of responses that simulate changes in personality, traits, fronting, etc. */
-    reaction: triggers
+    /** How much this headmate wants to be fronting, whether or not they are. */
+    frontInterest: frontInterest
+
+    /** An event-triggered system of responses that simulate changes in personality, attributes, fronting, etc. */
+    reactions: triggers
 
     /** The name of this headmate. A singlet should always have a name. If undefined, the system name should be used,
      * and if undefined, "Player" should be used. */
     name: string | undefined
 
-    /** Traits describing this headmate. Used by story mechanics. */
-    traits: (keyof typeof trait)[]
+    /** A tagging system of changing effects, scoped to qualities. */
+    attributes: (keyof typeof attribute)[]
 
-    /** Memories are a tagging system for characters to remember associations and events. */
-    memories: (keyof typeof memory)[]
+    /** A tagging system of what has occurred, scoped to associations and events. */
+    memories: memory[]
 
-    /** Stats measuring changes in major spectrums, which can trigger changes in traits. */
+    /** Stats measuring changes in major spectrums, which can trigger changes in attributes. */
     stats: {[key in stat]: number}
 
     /** Identifies the pronoun set to use, or uses a custom one. Do not make associations between pronouns, gender, and

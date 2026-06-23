@@ -64,14 +64,17 @@ interface ILocalizedStrings {
   ApplicationName: string
   ApplicationNameAndVersion: (appName: string, appVersion: string) => string
   Attributes: {
-    Argumentative: string
-    Aromantic: string
-    Empathetic: string
-    Extrospective: string
+    Guarded: string
+    OvershareProne: string
+    Stubborn: string
+    Amenable: string
     Introspective: string
-    LowSelfEsteem: string
-    Materialistic: string
-    SelfLoving: string
+    Passive: string
+    Assertive: string
+    Calculated: string
+    Empathetic: string
+    Vegetarian: string
+    Vegan: string
   }
   Player: string
 }

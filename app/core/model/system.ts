@@ -17,7 +17,7 @@ export function getCombinedIdentity(character: system): headmate {
     const combinedTraits: (string | number | symbol)[] = []
     const combinedMemories: (string | number | symbol)[] = []
     for (let headmate of character.headmates) {
-        combinedTraits.concat(headmate.traits)
+        combinedTraits.concat(headmate.attributes)
         combinedMemories.concat(headmate.memories)
     }
 
@@ -36,6 +36,6 @@ export function getCombinedIdentity(character: system): headmate {
         stats: combinedStats,
         switchRuleset: undefined,
         system: character,
-        traits: combinedTraits
+        attributes: combinedTraits
     }
 }

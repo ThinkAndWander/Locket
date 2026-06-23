@@ -1,10 +1,6 @@
 import { milestone } from "./milestones";
 import { system } from "./system";
 
-export const enum triggers {
-
-}
-
 /** App-wide options regardless of what players, characters, or anything. */
 export type applicationOptions = {
     /** Master, music, sfx, voice. Each is a number from 0 to 1 where 1 is full volume. */

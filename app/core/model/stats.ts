@@ -17,7 +17,7 @@ export const enum stat {
     emotionalListening = 1,
 
     /** Self awareness.
-     * This is not a spectrum, but it affects mental growth and what some traits in combination mean. */
+     * This is not a spectrum, but it affects mental growth and what some attributes in combination mean. */
     introspection = 2,
 
     /** Changing World based on Self and not changing Self based on World.
