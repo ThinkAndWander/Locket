@@ -3,6 +3,8 @@ import { stat } from "./stats"
 import { skill } from './skills'
 import { attribute } from './attributes'
 import { pronounSet } from "./pronouns"
+import { memory } from "./memory"
+import { emotion } from "./emotion"
 
 /** When most things change, these are re-evaluated and anything that would be triggered is then evaluated, in order.
  * This is used to simulate natural changes in emotion and other side effects.
@@ -52,36 +54,50 @@ type frontInterest = {
     tempRecovery: number
 
     /** Adds +desire when the given headmate is present, which includes external people's headmates. */
-    headmateModifier: [number, headmate]
+    headmateModifier: [number, headmate][]
 
     /** [+desire, hours] such as [0.2, 1] meaning +0.2 desire to front each hour if not fronting. */
     impatienceModifier: [number, number]
 
-    /** [+desire, hours] such as [-0.2, 1] meaning -0.2 desire to front each hour if fronting. */
-    shynessModifier: [number, number]
+    /** Adds +x desire to front when sufficiently happy (or other positive emotions). */
+    positiveEmotionModifier: number
 
     /** Adds +x desire to front when sufficiently sad, angry, etc. Usually a negative value. */
-    negativeMoodModifier: number
+    negativeEmotionModifier: number
+}
+
+/** Types of presence. */
+export const enum presence {
+    /** Doesn't affect the headmate count or reveal presence, or trigger headmate-specific events. */
+    Hidden,
+
+    /** Affects the headmate count, but does not trigger headmate-specific events or reveal to the player. */
+    Anonymous,
+
+    /** Affects both the count of headmates and reveals who to the player. */
+    Known
 }
 
 /** Interactions with other headmates. */
-type frontingInteraction = {
-    /** Headmates need to meet the natural limit + this one to start fronting, if this one is active. */
-    pushiness?: number
+type frontingPresence = {
+    /** Numbers 0-1 to observe and share mood (mixes by percent). */
+    shareMood?: [number, number]
 
-    /** When this one fronts, push others to stop fronting by resetting their fronting desire to 0.5 (unless it's 1). */
-    othersStopFronting?: boolean
+    /** Number 0-1 to observe stats. Bool to share attributes or not. Number 0-1 to mix stats by %. */
+    shareAttributes?: [number, boolean, number]
+
+    /** A number 0-1 to observe and boolean to share skills or not. */
+    shareSkills?: [number, boolean]
+
+    /** A number 0-1 to observe and boolean to share memories or not. */
+    shareMemories?: [number, boolean]
+
+    /** When this headmate fronts, applies a negative modifier to the currently-fronting to cause them to stop. When
+     * multiple are pushy like this, the suppression applies to all and at least 1 headmate will remain fronting. */
+    suppressFronting?: number
 
     /** Whether a headmate is revealed to the player. This represents the system's awareness. */
-    declarePresence?: boolean
-}
-
-/** Numbers 0-1 representing % observed, % shared. */
-type frontingPresence = {
-    shareMood?: [number, number]
-    shareAttributes?: [number, number]
-    shareSkills?: [number, number]
-    shareMemories?: [number, number]
+    declarePresence?: presence
 }
 
 /** A personality of the player. */
@@ -104,9 +120,6 @@ export type headmate = {
 
     /** What this headmate observes and shares internally. */
     frontPresence: frontingPresence
-
-    /** How this headmate interacts with other headmates. */
-    frontInteraction: frontingInteraction
 
     /** How much this headmate wants to be fronting, whether or not they are. */
     frontInterest: frontInterest
@@ -132,7 +145,9 @@ export type headmate = {
      * support gender fluidity, genderqueer and similar needs. */
     pronouns: (pronounSet | [string, string, string, string, string])[]
 
-    /** How pronouns are used, if used. Supports many common cases. Default is using pronouns. */
+    /** By default, headmates are referred to by their first chosen pronoun. Alternatively, they can be referred to by
+     * their name, in which case the system name is preferred when multiple headmates are fronting. Cycling to the next
+     * pronoun each time it's called for is also an option, as is randomly picking (can pick the same in a row too). */
     pronounBehavior: "use pronouns" | "use name" | "cycle" | "randomize",
 
     /** How pronouns are used when referring to oneself. Singlets use singular pronoun behavior by default. Systems use
@@ -142,4 +157,74 @@ export type headmate = {
 
     /** Part of changing game data that identifies the current pronoun set to use, if alternation rules are in use. */
     pronounAlted: number
+}
+
+/** Returns 1 if a headmate should be fronting, 0 if neutral, -1 if they shouldn't. */
+export function isFronting(headmate: headmate): number {
+    return headmate.frontInterest.desireToFront >= 0.75 ? 1
+        : headmate.frontInterest.desireToFront <= 0.25 ? -1 : 0
+}
+
+/** Calculates the current fronting interest for the given headmate, taking into consideration all others present. */
+export function getFrontingInterest(headmate: headmate, allOthers: headmate[]): number {
+    let amount = headmate.frontInterest.desireToFront
+        + headmate.frontInterest.negativeEmotionModifier
+        + headmate.frontInterest.positiveEmotionModifier
+        + headmate.frontInterest.tempModifier
+
+    for (const entry of headmate.frontInterest.headmateModifier) {
+        if (allOthers.includes(entry[1])) {
+            amount += entry[0]
+        }
+    }
+
+    return amount
+}
+
+/** Optional utility to create a headmate (since it's such a large object). */
+export function newHeadmate(system: system): headmate {
+    return {
+        attributes: [],
+        bodyAttractPreference: 'any',
+        genderedLanguagePreference: 'match',
+        frontInterest: {
+            desireToFront: 1,
+            headmateModifier: [],
+            impatienceModifier: [0, 0],
+            negativeEmotionModifier: 0,
+            positiveEmotionModifier: 0,
+            tempModifier: 0,
+            tempRecovery: 0
+        },
+        frontPresence: {
+            shareAttributes: [1, true, 1],
+            shareMemories: [1, true],
+            shareMood: [1, 1],
+            shareSkills: [1, true],
+            declarePresence: presence.Known,
+        },
+        memories: [],
+        name: undefined,
+        pronounAlted: 0,
+        pronounBehavior: "use pronouns",
+        pronouns: ["they"],
+        selfPronounBehavior: "singular",
+        reactions: {
+            statChanges: {},
+            attributeChanges: {},
+            emotionChanges: {},
+            frontBlockedBy: [],
+            personJoins: [],
+            personLeaves: [],
+            skillChanges: {}
+        },
+        stats: {
+            [stat.emotionalOpenness]: 0,
+            [stat.emotionalListening]: 0,
+            [stat.introspection]: 0,
+            [stat.assertiveness]: 0,
+            [stat.empathy]: 0,
+        },
+        system: system
+    }
 }

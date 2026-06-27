@@ -1,8 +1,7 @@
 {
-	"files": [ "app/main.ts" ],
 	"compilerOptions": {
 		"rootDir": "./",
-		"outDir": "build",
+		"outDir": "./build",
 		"target": "es6",
 		"moduleResolution": "node",
 		"sourceMap": true,

@@ -17,27 +17,13 @@ npm install
 npm run build
 ```
 
+[ESLint](https://eslint.org/) is enabled in this project for linting. If you use VSCode, go to Extensions and search ESLint to install it for inline support.
+
 ## Typescript patterns
 
-Don't use `any` or `unknown` if avoidable; comment why if you do use them.
-When deserializing JSON, wrap the type in Partial<T>.
-
-Code defensively against runtime bugs, not programmers. Well-placed comments suffice. Prefer `/** multiline */` comments for intellisense.
-
-**For ease of use**
-1. Use constants instead of enums for maximum intercompatibility in Typescript. This sacrifices negligible speed gains of enums or const enums to favor readability when serialized to JSON and avoid ordinal issues or having to set every value to a number.
-```
-const myEnum = {
-    myValue: "myValue" // same exact spelling
-}
-```
-
-2. Use types with static functions to create instances, instead of classes. For several reasons:
-- Potential runtime errors due to passing functions outside the class but not using captures or .bind
-- Potential runtime errors as Typescript allows object literals to count even though they don't have the inherited members
-- Better Typescript coverage with basic types than with classes. Fewer sticky situations.
-
-Programmers are smart, so we can overcome encapsulation. Comment "this is private" or "this is auto-computed data" as applicable, and use static functions to 
-
-Use static functions to create the types if you want to control their shape.
-Programmers are smart, we can overcome encapsulation by just commenting "this is private", "this is computed/derived data", etc. There is no need to try guarding against it otherwise.
+- Avoid `any` and `unknown`. Comment why if used
+- Avoid classes or functions in types, for easy de/serialization and typesafety. Deserialize to `Partial<T>`
+- Specify a return type for functions
+- Prefer `const enum`
+- In types, comment what the default value should be and only meaningful comments/ Prefer `/** multline */`
+- Use _underscore to indicate private variables (even outside of classes)

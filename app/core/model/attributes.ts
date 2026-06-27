@@ -1,4 +1,4 @@
-import { strings } from "../localization"
+import { strings } from "../persistence"
 import { headmate } from "./headmates"
 import { stat } from "./stats"
 

@@ -18,6 +18,7 @@ export const localizedStrings: ILocalizedStringSets = {
       Vegetarian: 'Vegetarian',
       Vegan: 'Vegan',
     },
-    Player: 'Player'
+    Player: 'Player',
+    IMEInputKeyHint: 'Submit'
   },
 };

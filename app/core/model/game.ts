@@ -18,25 +18,21 @@ export type gameOptions = {
 }
 
 /** A player and their metadata. */
-export type character = {
+export type player = {
     system: system
     milestones: milestone[]
 }
 
-const enum season {
-    winter = 0, spring = 1, summer = 2, fall = 3
-}
-
 /** An instance of a loaded, running game. */
 export type game = {
-    players: system[]
+    players: player[]
 
-    /** Season duration is a player option. */
-    season: season
+    /** This is all hours since the start of the game. */
+    hourTotal: number
+}
 
-    /** The first day is day 1. Whole number. */
-    day: number
-
-    /** Hours can be fractional and go up to 24. */
-    hour: number
+/** Process all game changes that occur hourly. */
+export function tick(game: game): void {
+    // TODO: Connect to a global hours counter and so on.
+    game.hourTotal++
 }

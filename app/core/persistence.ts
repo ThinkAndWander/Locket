@@ -1,32 +1,42 @@
-import { getSupportedLocale } from "./localization"
+import { getSupportedLocale, ILocalizedStrings, ILocalizedStringSets, supportedLocales } from "./localization"
+import { localizedStrings } from "./localizedStrings"
 
 // Use only one storage key to avoid ever creating fragments from coding mistakes.
-const localStorageKey = 'LocketGame'
+const _localStorageKey = 'LocketGame'
+
 export type localStorageVariables = {
   locale: string
 }
 
-/** This can safely be assumed to exist because it's called at the start of the app, before reading storage.
- * 
- *  Undefined until loadStorage is called. Then it gets filled, even if it fails to load (fills with defaults).
- * It remains defined at all times. */
-export let loadedLocalStorage: localStorageVariables
+/** This is called in start.ts, filling in defaults and is safe to use immediately. Do not reassign. */
+export let loadedLocalStorage: Readonly<localStorageVariables>
 
 /** Combines a partial local storage copy to fill in with current loaded data, else defaults. */
-function fillDefaults(storage: Partial<localStorageVariables>) {
-  storage.locale ??= getSupportedLocale(true)
+function _fillDefaults(storage: Partial<localStorageVariables>): localStorageVariables {
+  storage.locale ??= loadedLocalStorage?.locale ?? getSupportedLocale()
   return storage as localStorageVariables
 }
 
-export function saveToLocalStorage(state: localStorageVariables) {
-  localStorage.setItem(localStorageKey, JSON.stringify(fillDefaults(state)))
+/** Saves all values in the local storage object. */
+export function saveToLocalStorage(state: localStorageVariables): void {
+  localStorage.setItem(_localStorageKey, JSON.stringify(_fillDefaults(state)))
 }
 
-export function loadFromLocalStorage() {
-  const json = localStorage.getItem(localStorageKey)
+/** Loads all persisted preferences, filling in defaults and populating strings of the resolved locale. */
+export function loadFromLocalStorage(): void {
+  const json = localStorage.getItem(_localStorageKey)
 
-  if (json) {
-    try { loadedLocalStorage = fillDefaults(JSON.parse(json) as Partial<localStorageVariables>) } 
-    catch { loadedLocalStorage = fillDefaults({}); return }
-  }
+  try { loadedLocalStorage = _fillDefaults(JSON.parse(json ?? '{}') as Partial<localStorageVariables>) } 
+  catch { loadedLocalStorage = _fillDefaults({}) }
+
+  // Local storage combines with locale, making it the source of truth. Exposing this from localization would require
+  // a call to persistence.ts and create a circular reference, so it's done here instead.
+  _locale = loadedLocalStorage.locale as keyof ILocalizedStringSets ?? getSupportedLocale()
+  strings = localizedStrings[supportedLocales[_locale] as keyof typeof localizedStrings]
 }
+
+/** The current locale. Assigned only once at the start. Do not reassign. */
+let _locale: keyof ILocalizedStringSets
+
+/** Strings localized. This doesn't include placeholders. Assigned once at the start. Do not reassign. */
+export let strings: Readonly<ILocalizedStrings>

@@ -1,4 +1,4 @@
-import { strings } from '../localization'
+import { strings } from "../persistence"
 import { loadedLocalStorage } from '../persistence'
 import { headmate } from './headmates'
 
@@ -68,12 +68,12 @@ export type selfPronounSet = keyof typeof selfPronouns
 
 /** This function takes an already-localized string and makes substitutions for words, including contextually sensitive
  * words that are not pronouns, based on the given headmate's pronoun preferences. It returns the new string. */
-export function injectPronouns(headmate: headmate, localizedString: string, thisHeadmateOnly?: boolean): string {
+export function injectPronouns(headmate: headmate, localizedString: string, soloFronting?: boolean): string {
   let extSet: pronounSet | [string, string, string, string, string] = "appendForNames"
   let selfSet: selfPronounSet = "appendForNames"
   let selfPlurality: keyof typeof subjectMatch = 'otherSingle'
   let extPlurality: keyof typeof subjectMatch = 'otherSingle'
-  const name = !thisHeadmateOnly || headmate.selfPronounBehavior === 'always plural'
+  const name = !soloFronting || headmate.selfPronounBehavior === 'always plural'
     ? headmate.system.systemName ?? headmate.name ?? strings.Player
     : headmate.name ?? headmate.system.systemName ?? strings.Player
 
@@ -103,9 +103,9 @@ export function injectPronouns(headmate: headmate, localizedString: string, this
         selfPlurality = 'selfSingle'
         break
       case 'plural':
-        selfSet = thisHeadmateOnly ? 'singular' : 'plural'
-        selfPlurality = thisHeadmateOnly ? 'selfSingle' : 'selfPlural'
-        extPlurality = thisHeadmateOnly ? 'otherSingle' : 'otherPlural'
+        selfSet = soloFronting ? 'singular' : 'plural'
+        selfPlurality = soloFronting ? 'selfSingle' : 'selfPlural'
+        extPlurality = soloFronting ? 'otherSingle' : 'otherPlural'
         break
       case 'always plural':
         selfSet = 'plural'

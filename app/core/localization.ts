@@ -1,16 +1,9 @@
-import { localizedStrings } from "./localizedStrings"
-import { loadedLocalStorage } from "./persistence"
-
 /** Gets the nearest supported locale from the browser using navigator.languages or navigator.language. This is
  * accurate for Firefox and Chrome. IE and Edge return the OS language instead and only return the browser
  * language from an Accept-Languages header. This is considered good enough though. Defaults if the preferred
  * locale isn't listed. */
-export const getSupportedLocale = (useLoadedStorage?: boolean): keyof ILocalizedStringSets => {
+export const getSupportedLocale = (): keyof ILocalizedStringSets => {
   let locale = "en-us" // Defaults to English because all strings are guaranteed to exist in it.
-
-  if (useLoadedStorage) {
-    locale = loadedLocalStorage.locale
-  }
 
   // This is an experimental feature at time of writing, so it may be undefined.
   if (navigator.languages !== undefined) {
@@ -56,11 +49,8 @@ export interface ILocalizedStringSets {
   "en-us": ILocalizedStrings
 }
 
-/** Current strings. */
-export const strings = localizedStrings[supportedLocales[getSupportedLocale(true)] as keyof typeof localizedStrings]
-
-/** All strings to be localized per locale. */
-interface ILocalizedStrings {
+/** All strings to be localized per locale. Unlocalized strings: English pronouns, see pronouns.ts */
+export interface ILocalizedStrings {
   ApplicationName: string
   ApplicationNameAndVersion: (appName: string, appVersion: string) => string
   Attributes: {
@@ -77,4 +67,6 @@ interface ILocalizedStrings {
     Vegan: string
   }
   Player: string
+  /** Text on the enter button in mobile virtual text entry. */
+  IMEInputKeyHint: string
 }

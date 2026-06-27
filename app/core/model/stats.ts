@@ -5,7 +5,8 @@
  * Nothing is really this binary and most of all, it's very compartmentalized in the real world (lingering emotions for
  * just one person, for example) because the mind is a neural net. Everything here is generally good and bad, with
  * nuanced side effects. For example, being self-aware is the basis for severe overthinking and self hate as well as
- * self love and increasing other stats.
+ * self love and increasing other stats. Complexities like the accuracy of reviewing and taking in new thoughts are
+ * part of metacognition and not easily represented in this game.
  * */
 export const enum stat {
     /** Giving input of the Self to World.
@@ -28,10 +29,3 @@ export const enum stat {
      * A spectrum from callousness to feeling everything. */
     empathy = 4
 }
-
-
-and the judgment is not guaranteed to be informed nor is the process of updating your thoughts
-with outside thoughts. Those processes are part of metacognition, a topic outside this game and
-not quantifiable (as are copes to rectify input from the world, or fight-flight-freeze-fawn-feint
-conflict responses). The requirements for unrestricted player agency prevents narrowing down
-to a specific personality type, anyway.
