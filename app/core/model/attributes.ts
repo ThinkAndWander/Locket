@@ -1,4 +1,3 @@
-import { strings } from "../persistence"
 import { headmate } from "./headmates"
 import { stat } from "./stats"
 
@@ -32,33 +31,33 @@ type attributeEntry = { name: string, assign?: (unified: headmate) => boolean }
 
 /** Static traits and qualities a headmate can have, not mutated with gameplay state. */
 export const attributesLookup: {[key in keyof typeof attribute]: attributeEntry} = {
-    'guarded': { name: strings.Attributes.Guarded, assign: (unified: headmate) => {
+    'guarded': { name: "Guarded", assign: (unified: headmate) => {
         return unified.stats[stat.emotionalOpenness] <= -3
     }},
-    'overshareProne': { name: strings.Attributes.OvershareProne, assign: (unified: headmate) => {
+    'overshareProne': { name: "Overshare prone", assign: (unified: headmate) => {
         return unified.stats[stat.emotionalOpenness] >= 3
     }},
-    'stubborn': { name: strings.Attributes.Stubborn, assign: (unified: headmate) => {
+    'stubborn': { name: "Stubborn", assign: (unified: headmate) => {
         return unified.stats[stat.emotionalListening] <= -3
     }},
-    'amenable': { name: strings.Attributes.Amenable, assign: (unified: headmate) => {
+    'amenable': { name: "Amenable", assign: (unified: headmate) => {
         return unified.stats[stat.emotionalListening] >= 3
     }},
-    'introspective': { name: strings.Attributes.Amenable, assign: (unified: headmate) => {
+    'introspective': { name: "Introspective", assign: (unified: headmate) => {
         return unified.stats[stat.introspection] >= 3
     }},
-    'passive': { name: strings.Attributes.Amenable, assign: (unified: headmate) => {
+    'passive': { name: "Passive", assign: (unified: headmate) => {
         return unified.stats[stat.assertiveness] <= -3
     }},
-    'assertive': { name: strings.Attributes.Amenable, assign: (unified: headmate) => {
+    'assertive': { name: "Assertive", assign: (unified: headmate) => {
         return unified.stats[stat.assertiveness] >= 3
     }},
-    'calculated': { name: strings.Attributes.Calculated, assign: (unified: headmate) => {
+    'calculated': { name: "Calculated", assign: (unified: headmate) => {
         return unified.stats[stat.empathy] <= -3
     }},
-    'empathetic': { name: strings.Attributes.Empathetic, assign: (unified: headmate) => {
+    'empathetic': { name: "Empathetic", assign: (unified: headmate) => {
         return unified.stats[stat.empathy] >= 3
     }},
-    'dietVegetarian': { name: strings.Attributes.Vegetarian },
-    'dietVegan': { name: strings.Attributes.Vegan },
+    'dietVegetarian': { name: "Vegetarian" },
+    'dietVegan': { name: "Vegan" },
 }

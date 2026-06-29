@@ -1,5 +1,3 @@
-import { strings } from "../persistence"
-import { loadedLocalStorage } from '../persistence'
 import { headmate } from './headmates'
 
 /** These words change in proportion to an associated plurality, in this case plurality of the pronoun.
@@ -66,73 +64,70 @@ export const selfPronouns = {
 export type pronounSet = keyof typeof pronouns
 export type selfPronounSet = keyof typeof selfPronouns
 
-/** This function takes an already-localized string and makes substitutions for words, including contextually sensitive
+/** This function takes a string and makes substitutions for words, including contextually sensitive
  * words that are not pronouns, based on the given headmate's pronoun preferences. It returns the new string. */
-export function injectPronouns(headmate: headmate, localizedString: string, soloFronting?: boolean): string {
+export function injectPronouns(headmate: headmate, soloFronting: boolean, str: string): string {
   let extSet: pronounSet | [string, string, string, string, string] = "appendForNames"
   let selfSet: selfPronounSet = "appendForNames"
   let selfPlurality: keyof typeof subjectMatch = 'otherSingle'
   let extPlurality: keyof typeof subjectMatch = 'otherSingle'
   const name = !soloFronting || headmate.selfPronounBehavior === 'always plural'
-    ? headmate.system.systemName ?? headmate.name ?? strings.Player
-    : headmate.name ?? headmate.system.systemName ?? strings.Player
+    ? headmate.system.systemName ?? headmate.name ?? 'Player'
+    : headmate.name ?? headmate.system.systemName ?? 'Player'
 
   // The typical set of pronouns people use is "external", i.e. used to describe them.
-  if (loadedLocalStorage.locale === 'en-us') { // these pronoun rules are specific to English.
-    if (headmate.pronouns.length > 0) {
-      switch (headmate.pronounBehavior) {
-        case 'use name': break
-        case 'use pronouns':
-          extSet = headmate.pronouns[0]
-          break
-        case 'cycle':
-          headmate.pronounAlted = (headmate.pronounAlted + 1) % headmate.pronouns.length
-          extSet = headmate.pronouns[headmate.pronounAlted]
-          break
-        case 'randomize':
-          extSet = headmate.pronouns[Math.round(Math.random() * (headmate.pronouns.length - 1))]
-          break
-        default: headmate.pronounBehavior satisfies never // Catch missing TS cases
-      }
-    }
-    
-    switch (headmate.selfPronounBehavior) {
+  if (headmate.pronouns.length > 0) {
+    switch (headmate.pronounBehavior) {
       case 'use name': break
-      case 'singular':
-        selfSet = 'singular'
-        selfPlurality = 'selfSingle'
+      case 'use pronouns':
+        extSet = headmate.pronouns[0]
         break
-      case 'plural':
-        selfSet = soloFronting ? 'singular' : 'plural'
-        selfPlurality = soloFronting ? 'selfSingle' : 'selfPlural'
-        extPlurality = soloFronting ? 'otherSingle' : 'otherPlural'
+      case 'cycle':
+        headmate.pronounAlted = (headmate.pronounAlted + 1) % headmate.pronouns.length
+        extSet = headmate.pronouns[headmate.pronounAlted]
         break
-      case 'always plural':
-        selfSet = 'plural'
-        selfPlurality = 'selfPlural'
-        extPlurality = 'otherPlural'
+      case 'randomize':
+        extSet = headmate.pronouns[Math.round(Math.random() * (headmate.pronouns.length - 1))]
         break
-      default: headmate.selfPronounBehavior satisfies never // Catch missing TS cases
+      default: headmate.pronounBehavior satisfies never // Catch missing TS cases
     }
+  }
+  
+  switch (headmate.selfPronounBehavior) {
+    case 'use name': break
+    case 'singular':
+      selfSet = 'singular'
+      selfPlurality = 'selfSingle'
+      break
+    case 'plural':
+      selfSet = soloFronting ? 'singular' : 'plural'
+      selfPlurality = soloFronting ? 'selfSingle' : 'selfPlural'
+      extPlurality = soloFronting ? 'otherSingle' : 'otherPlural'
+      break
+    case 'always plural':
+      selfSet = 'plural'
+      selfPlurality = 'selfPlural'
+      extPlurality = 'otherPlural'
+      break
+    default: headmate.selfPronounBehavior satisfies never // Catch missing TS cases
   }
   
   const pronounFor = (index: number) => (extSet === 'appendForNames' ? name : Array.isArray(extSet) ? extSet[index] : pronouns[extSet][index])
   const selfPronounFor = (index: number) => ((selfSet === 'appendForNames' ? name : '') + selfPronouns[selfSet][index])
 
-  return localizedString
+  return str
     // Pronoun-matching words
-    .replaceAll(/%I am/g, selfPronounFor(0) + ` ${subjectMatch[selfPlurality][0]}`)
-    .replaceAll(/%I was/g, selfPronounFor(1) + ` ${subjectMatch[selfPlurality][1]}`)
-    .replaceAll(/%I have/g, selfPronounFor(2) + ` ${subjectMatch[selfPlurality][2]}`)
-    .replaceAll(/%I'd/g, selfPronounFor(3) + ` ${subjectMatch[selfPlurality][3]}`)
+    .replaceAll(/%am/g, subjectMatch[selfPlurality][0])
+    .replaceAll(/%was/g, subjectMatch[selfPlurality][1])
+    .replaceAll(/%have/g, selfPronounFor(2) + ` ${subjectMatch[selfPlurality][2]}`)
     .replaceAll(/%I'm/g, selfPronounFor(4) + ` ${subjectMatch[selfPlurality][4]}`)
     .replaceAll(/%I've/g, selfPronounFor(5) + ` ${subjectMatch[selfPlurality][5]}`)
-    .replaceAll(/%they are/g, pronounFor(0) + (extSet !== 'appendForNames' ? ` ${subjectMatch[extPlurality][0]}` : ''))
-    .replaceAll(/%they were/g, pronounFor(0) + (extSet !== 'appendForNames' ? ` ${subjectMatch[extPlurality][1]}` : ''))
-    .replaceAll(/%they have/g, pronounFor(0) + (extSet !== 'appendForNames' ? ` ${subjectMatch[extPlurality][2]}` : ''))
-    .replaceAll(/%they'd/g, pronounFor(0) + (extSet !== 'appendForNames' ? ` ${subjectMatch[extPlurality][3]}` : ''))
-    .replaceAll(/%they're/g, pronounFor(0) + (extSet !== 'appendForNames' ? ` ${subjectMatch[extPlurality][4]}` : ''))
-    .replaceAll(/%they've/g, pronounFor(0) + (extSet !== 'appendForNames' ? ` ${subjectMatch[extPlurality][5]}` : ''))
+    .replaceAll(/%are/g, extSet !== 'appendForNames' ? ` ${subjectMatch[extPlurality][0]}` : '')
+    .replaceAll(/%were/g, extSet !== 'appendForNames' ? ` ${subjectMatch[extPlurality][1]}` : '')
+    .replaceAll(/%have/g, extSet !== 'appendForNames' ? ` ${subjectMatch[extPlurality][2]}` : '')
+    .replaceAll(/%'d/g, extSet !== 'appendForNames' ? ` ${subjectMatch[extPlurality][3]}` : '')
+    .replaceAll(/%'re/g, extSet !== 'appendForNames' ? ` ${subjectMatch[extPlurality][4]}` : '')
+    .replaceAll(/%'ve/g, extSet !== 'appendForNames' ? ` ${subjectMatch[extPlurality][5]}` : '')
     // %s means pluralize and is used like "she want%s" to conditionally add the s
     .replaceAll(/\w*?(?=%s)/g, (str) => str + subjectMatch[extPlurality][6])
 

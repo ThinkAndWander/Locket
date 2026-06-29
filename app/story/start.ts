@@ -1,20 +1,27 @@
-// TODO: handle new, load, open at the start of the game.
-
 import { newHeadmate } from "../core/model/headmates"
-import { system } from "../core/model/system"
 import { loadFromLocalStorage } from "../core/persistence"
-import { initDisplay } from "../GUI/display"
+import { initDisplay, outputHTML } from "../GUI/display"
+import { game } from "../core/model/game"
 
 export function init(): void {
 
-    debugger
     loadFromLocalStorage() // Keep this call first
     initDisplay()
 
-    const player: system = {
-        headmates: [],
-        systemName: undefined
+    // Initializes the game.
+    const game: game = {
+        player: {
+            milestones: [],
+            system: {
+                headmates: [],
+                systemName: undefined
+            }
+        },
+        hourTotal: 0
     }
 
-    player.headmates.push(newHeadmate(player))
+    game.player.system.headmates.push(newHeadmate(game.player.system))
+
+    // Parse the story for display.
+    // The parser should expose this and we call it here. TODO
 }

@@ -3,8 +3,10 @@
 export const enum emotion {
     /** Includes many complex positive emotions. */
     happy,
+
     /** Includes some negative emotions. */
     sad,
+
     /** Includes many complex negative emotions. */
     upset
 }

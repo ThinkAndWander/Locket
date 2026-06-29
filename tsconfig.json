@@ -13,7 +13,8 @@
 		"strictBindCallApply": true,
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
-		"noUnusedLocals": true,
+		// Please do not add "no unused vars" because that requires commenting out code to get around it while testing
+		// mid-change and can result in leaving comments in committed code.
 		"lib": [
 			"DOM",
 			"ES5",
@@ -26,6 +27,6 @@
 			"ES2021",
 			"ES2022",
 			"ESNext"
-		]
+		],
 	}
 }

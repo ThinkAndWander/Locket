@@ -1,5 +1,3 @@
-import { strings } from "../core/persistence"
-
 let _container: HTMLDivElement // Container.
 let _out: HTMLDivElement // Output region.
 let _in: HTMLTextAreaElement // Input textbox.
@@ -33,19 +31,24 @@ export function initDisplay(): void {
 
     _in = document.createElement('textarea')
     _in.addEventListener('keydown', (kbEvent) => _onInputKey(kbEvent))
-    _in.enterKeyHint = strings.IMEInputKeyHint
+    _in.enterKeyHint = 'Submit'
     _in.spellcheck = false
     _container.appendChild(_in)
 }
 
 /** Append any HTML element to the output. If all output is cleared, use the "autofocus" property on the first item to
  * focus it for accessibility. */
-export function appendOutput(clear?: boolean, ...entries: HTMLElement[]): void {
+export function outputHTML(clear?: boolean, ...entries: HTMLElement[]): void {
     if (clear) {
         _out.replaceChildren(...entries)
     } else {
         _out.append(...entries)
     }
+}
+
+/** Appends unsanitized text to output. */
+export function outputText(text: string) {
+    _out.append(text)
 }
 
 /** Input listeners fire when the textbox receives input. */

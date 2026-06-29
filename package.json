@@ -29,6 +29,8 @@
 	},
 	"dependencies": {
 		"@types/jquery": "^3.5.5",
-		"imperative-html": "^0.1.0"
+		"imperative-html": "^0.1.0",
+		"marked": "^18.0.5",
+		"marked-directive": "^1.0.7"
 	}
 }
