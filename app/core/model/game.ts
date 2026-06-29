@@ -1,9 +1,10 @@
 import { milestone } from "./milestones";
 import { system } from "./system";
+import { triggers } from "./triggeringContent";
 
-/** App-wide options regardless of what players, characters, or anything. */
-export type applicationOptions = {
-    /** Master, music, sfx, voice. Each is a number from 0 to 1 where 1 is full volume. */
+/** Options across the app, mostly about usage and settings like volume. */
+type applicationOptions = {
+    /** Global, music, sfx, voice. Each is a number from 0 to 1 where 1 is full volume. */
     volumes: [number, number, number, number]
 
     /** Stops animation if set to false. Undefined reads the browser's reduced motion preference. */
@@ -11,12 +12,15 @@ export type applicationOptions = {
 
     /** A multiplier for text size, for visual ease. */
     fontScaling: number
+
+    /** Subjects that a player may detest, be uncomfortable around or feel threatened by. Blocking a trigger makes its
+     * warning more prominent and hides the associated text so that you need to manually show it. */
+    blockedTriggers: triggers[]
 }
 
-/** Game-wide options that are associated to one game. */
-export type gameOptions = {
-    /** Default 90. */
-    daysInASeason: number
+/** Options to affect gameplay mechanics. */
+type gameOptions = {
+    
 }
 
 /** A player and their metadata. */
@@ -52,6 +56,12 @@ export type game = {
 
     /** The lowercased fork name corresponding to the currently-loaded fork. */
     currentFork: string
+
+    /** Options to change gameplay. */
+    gameOptions: gameOptions
+
+    /** Options across the app, mostly about usage and settings like volume. */
+    appOptions: applicationOptions
 }
 
 /** Process all game changes that occur hourly. */

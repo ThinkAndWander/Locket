@@ -1,3 +1,8 @@
 .forkOption {
     text-decoration-line: underline;
 }
+
+/** When themes are used, these will be applied. */
+.themedWidget {}
+.themedBgColor {}
+.themedText {}
