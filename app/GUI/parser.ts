@@ -1,33 +1,17 @@
 /** The story is written directly in a superset of Markdown; see the readme. */
 
 import { Marked } from 'marked'
-import { createDirectives, Directive } from 'marked-directive'
 import { mainStory } from '../story.md'
 import { injectPronouns } from '../core/model/pronouns'
-import { player } from '../core/model/game'
 import { getFronters } from '../core/model/system'
 import { outputHTML } from './display'
+import { fork, game } from '../core/model/model'
 
 const forkname_match = /(?<=^@)\s*\w+/gum
 
-/** A top-level token, sorted before anything else in the story text. */
-type fork = {
-    /** A unique, lowercased and trimmed fork name of \w word characters. */
-    name: string,
-
-    /** The contents of the fork, pre-processed only by javascript string interpolation. */
-    contents: string,
-
-    /** The contents of the fork, also pre-processed with %placeholder injection. */
-    contentsTransformed?: string,
-
-    /** Additional information associated to the fork and delimitted by commas. */
-    arguments: string[]
-}
-
 /** Finds all fork headers with syntax "\@fork name" which are at the start of a line, and breaks the text into groups
  * based on that. This is parsing step 1. */
-function preprocessForks(str: string): fork[] {
+function _preprocessForks(str: string): fork[] {
     const forkPositions: { name: string, index: number, arguments: string[] }[] = []
     const matches = str.matchAll(forkname_match)
 
@@ -45,10 +29,10 @@ function preprocessForks(str: string): fork[] {
     for (let i = 0; i < forkPositions.length; i++) {
         if (i === forkPositions.length - 1) {
             forks.push({ name: forkPositions[i].name, arguments: forkPositions[i].arguments,
-                contents: str.substring(lastIndex) })
+                contents: str.substring(lastIndex), links: [] })
         } else {
             forks.push({ name: forkPositions[i].name, arguments: forkPositions[i].arguments,
-                contents: str.substring(lastIndex, forkPositions[i].index) })
+                contents: str.substring(lastIndex, forkPositions[i].index), links: [] })
         }
     }
 
@@ -56,8 +40,7 @@ function preprocessForks(str: string): fork[] {
 }
 
 /** When a fork loads, this is performed. */
-export function handleFork(player: player, fork: fork): void {
-
+export function handleFork(game: game, fork: fork): void {
     const marked = new Marked().use({
         walkTokens: (token) => {
             if (token.type === 'link') {
@@ -66,8 +49,9 @@ export function handleFork(player: player, fork: fork): void {
 
                         for (const match of matches) {
                             const nameAndArguments = match.input.split(',')
-                            forkPositions.push({
+                            game.story.fork.links.push({
                                 name: nameAndArguments[0].trim().toLowerCase(),
+                                
                                 index: match.index,
                                 arguments: nameAndArguments.slice(1).map(str => str.trim())
                             })
@@ -78,7 +62,7 @@ export function handleFork(player: player, fork: fork): void {
     })
 
     // First, injects placeholders.
-    const frontingList = getFronters(player.system)
+    const frontingList = getFronters(game.player.system)
     fork.contentsTransformed = injectPronouns(frontingList.headmates[0], frontingList.count === 1, fork.contents)
 
     // Second, identifies and removes links from the main text.
@@ -89,4 +73,90 @@ export function handleFork(player: player, fork: fork): void {
     const container = document.createElement('span')
     container.setHTMLUnsafe(html)
     outputHTML(true, container)
+}
+
+export function runForkEngine(game: game): void {
+
+    const allForks: fork[] = _preprocessForks(mainStory)
+    handleFork(game, allForks[0])
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import type { MarkedExtension, Hooks } from 'marked'
+
+/**
+ * A [marked](https://marked.js.org/) extension that overrides ```js blocks to run them as the body of a new function,
+ * providing context to access the game, characters, and utility functions.
+ */
+function jsBlockExecution(): MarkedExtension {
+  return {
+    name: 'code',
+    level: 'block',
+    tokenizer: (_, parent) => {
+        parent.forEach(token => {
+            if (token.type !== 'code' || token.lang !== 'js' || !token.text) {
+                return
+            }
+
+            // do stuff here
+        })
+
+        return false
+    }
+  }
 }

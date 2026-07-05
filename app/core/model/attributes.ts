@@ -1,33 +1,4 @@
-import { headmate } from "./headmates"
-import { stat } from "./stats"
-
-/** Attributes are given, or derived from stats. Storywriting should use this if possible. */
-export const enum attribute {
-    /** Low emotional openness. */
-    guarded = 0,
-    /** High emotional openness. */
-    overshareProne = 1,
-    /** Low emotional listening. */
-    stubborn = 2,
-    /** High emotional listening, implying ability to quickly change (not the same as gullible). */
-    amenable = 3,
-    /** High introspection.  */
-    introspective = 4,
-    /** Low assertion. */
-    passive = 5,
-    /** High assertion. */
-    assertive = 6,
-    /** Low empathy. Not the same as disregard and coldness. */
-    calculated = 7,
-    /** High empathy. Not the same as emotional or rash. */
-    empathetic = 8,
-    /** For those who want to abstain digitally as well. */
-    dietVegetarian = 9,
-    /** For those who want to abstain digitally as well. */
-    dietVegan = 10,
-}
-
-type attributeEntry = { name: string, assign?: (unified: headmate) => boolean }
+import { attribute, attributeEntry, headmate, stat } from "./model"
 
 /** Static traits and qualities a headmate can have, not mutated with gameplay state. */
 export const attributesLookup: {[key in keyof typeof attribute]: attributeEntry} = {

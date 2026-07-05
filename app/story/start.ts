@@ -1,7 +1,7 @@
 import { newHeadmate } from "../core/model/headmates"
-import { loadFromLocalStorage } from "../core/persistence"
-import { initDisplay, outputHTML } from "../GUI/display"
-import { game } from "../core/model/game"
+import { loadedLocalStorage, loadFromLocalStorage } from "../core/persistence"
+import { initDisplay } from "../GUI/display"
+import { game } from "../core/model/model"
 
 /** The active game, including all options, fork details and player details. This is the running game; the static
  * content is stored in various files such as story.md and the app/story folder. */
@@ -15,7 +15,7 @@ export function init(): void {
     // Initializes the game.
     game = {
         player: {
-            milestones: [],
+            milestones: loadedLocalStorage.milestones,
             system: {
                 headmates: [],
                 systemName: undefined
@@ -26,7 +26,15 @@ export function init(): void {
             socialEnergy: 0
         },
         hourTotal: 0,
-        currentFork: '',
+        story: {
+            fork: {
+                name: '',
+                links: [],
+                arguments: [],
+                contents: ''
+            },
+            forkOptions: []
+        },
         appOptions: {
             blockedTriggers: [],
             fontScaling: 1,

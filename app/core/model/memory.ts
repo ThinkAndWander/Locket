@@ -1,18 +1,4 @@
-import { headmate } from "./headmates"
-import { emotion } from "./emotion"
-
-/** Memories are events and associations. */
-export type memory = {
-    /** The headmates that the memory is about. Emotions here may color interactions with them. Self memories will list
-     * only the headmate that owns the memory, and emotions will not apply. */
-    about: headmate[]
-
-    /** Timestamped to the nearest hour. */
-    totalHour: number
-
-    /** Associated emotion and its modifier, decay per hour, and minimum value. */
-    emotions?: [emotion, number, number, number][]
-}
+import { emotion, headmate, memory } from "./model"
 
 /** Gets the total emotion value associated to the "about" headmate. */
 export function getEmotionWeight(memories: memory[], about: headmate): { [key in emotion]: number } {

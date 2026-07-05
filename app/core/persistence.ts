@@ -1,8 +1,10 @@
+import { milestone } from "./model/model"
+
 // Use only one storage key to avoid ever creating fragments from coding mistakes.
 const _localStorageKey = 'LocketGame'
 
 export type localStorageVariables = {
-  // TODO
+  milestones: milestone[]
 }
 
 /** This is called in start.ts, filling in defaults and is safe to use immediately. Do not reassign. */
@@ -10,7 +12,7 @@ export let loadedLocalStorage: Readonly<localStorageVariables>
 
 /** Combines a partial local storage copy to fill in with current loaded data, else defaults. */
 function _fillDefaults(storage: Partial<localStorageVariables>): localStorageVariables {
-  // TODO
+  storage.milestones ??= []
   return storage as localStorageVariables
 }
 

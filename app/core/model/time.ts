@@ -1,11 +1,4 @@
-export const enum season {
-    winter = 0, spring = 1, summer = 2, fall = 3
-}
-
-/** Units of time (serialize as hours instead; do not use other units). */
-export const enum timeUnit {
-    hours, day, dayInWeek, month, monthInYear, season, year
-}
+import { timeUnit } from "./model"
 
 /** Casts time from any unit to any unit. Months are always 30 days long. */
 export function getTime(amount: number, from: timeUnit, to: timeUnit): number {

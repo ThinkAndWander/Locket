@@ -1,18 +1,6 @@
-import { attribute } from "./attributes"
-import { headmate, isFronting, newHeadmate, presence } from "./headmates"
+import { isFronting, newHeadmate } from "./headmates"
+import { attribute, headmate, frontingPresenceType, stat, system } from "./model"
 import { pronouns } from "./pronouns"
-import { stat } from "./stats"
-
-/** Any character, single or plural. */
-export type system = {
-    /** The minds of the body, partial or fully separate. The personality associated at player level is the "main"
-     * personality. The first headmate is the starting assumed headmate. There must always be at least one. */
-    headmates: headmate[]
-
-    /** A collective name for the system. For non-plural players, this is used first, fallbacking to the first
-     * headmate's name. */
-    systemName: string | undefined
-}
 
 /** Returns the number of fronting headmates (anonymous and known), and all known headmates. */
 export function getFronters(character: system): { headmates: headmate[], count: number } {
@@ -21,10 +9,10 @@ export function getFronters(character: system): { headmates: headmate[], count: 
 
     for (const headmate of character.headmates) {
         if (isFronting(headmate)) {
-            if (headmate.frontPresence.declarePresence === presence.Known) {
+            if (headmate.frontPresence.declarePresence === frontingPresenceType.Known) {
                 headmates.push(headmate)
                 count++
-            } else if (headmate.frontPresence.declarePresence === presence.Anonymous) {
+            } else if (headmate.frontPresence.declarePresence === frontingPresenceType.Anonymous) {
                 count++
             }
         }
@@ -43,8 +31,8 @@ export function getCombinedIdentity(character: system): headmate {
     let presentCount = 0, noneCount = 0, mascCount = 0, femCount = 0;
     for (const headmate of character.headmates) {
         if (isFronting(headmate)) {
-            if (headmate.frontPresence.declarePresence === presence.Anonymous ||
-                headmate.frontPresence.declarePresence === presence.Known)
+            if (headmate.frontPresence.declarePresence === frontingPresenceType.Anonymous ||
+                headmate.frontPresence.declarePresence === frontingPresenceType.Known)
             {
                 presentCount++
                 if (presentCount === 1) {

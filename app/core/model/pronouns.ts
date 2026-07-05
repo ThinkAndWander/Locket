@@ -1,4 +1,5 @@
-import { headmate } from './headmates'
+import { headmate } from './model'
+import { getFronters } from './system'
 
 /** These words change in proportion to an associated plurality, in this case plurality of the pronoun.
  * 
@@ -67,6 +68,8 @@ export type selfPronounSet = keyof typeof selfPronouns
 /** This function takes a string and makes substitutions for words, including contextually sensitive
  * words that are not pronouns, based on the given headmate's pronoun preferences. It returns the new string. */
 export function injectPronouns(headmate: headmate, soloFronting: boolean, str: string): string {
+  const fronters = getFronters(headmate.system)
+
   let extSet: pronounSet | [string, string, string, string, string] = "appendForNames"
   let selfSet: selfPronounSet = "appendForNames"
   let selfPlurality: keyof typeof subjectMatch = 'otherSingle'
