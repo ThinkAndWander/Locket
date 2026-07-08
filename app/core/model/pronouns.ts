@@ -67,36 +67,35 @@ export type selfPronounSet = keyof typeof selfPronouns
 
 /** This function takes a string and makes substitutions for words, including contextually sensitive
  * words that are not pronouns, based on the given headmate's pronoun preferences. It returns the new string. */
-export function injectPronouns(headmate: headmate, soloFronting: boolean, str: string): string {
-  const fronters = getFronters(headmate.system)
+export function injectPronouns(fronters: ReturnType<typeof getFronters>, str: string): string {
 
   let extSet: pronounSet | [string, string, string, string, string] = "appendForNames"
   let selfSet: selfPronounSet = "appendForNames"
   let selfPlurality: keyof typeof subjectMatch = 'otherSingle'
   let extPlurality: keyof typeof subjectMatch = 'otherSingle'
-  const name = !soloFronting || headmate.selfPronounBehavior === 'always plural'
-    ? headmate.system.systemName ?? headmate.name ?? 'Player'
-    : headmate.name ?? headmate.system.systemName ?? 'Player'
+  const name = fronters.count !== 1 || fronters.headmates.some(mate => mate.selfPronounBehavior === 'always plural')
+    ? headmates.system.systemName ?? headmates.name ?? 'Player'
+    : headmates.name ?? headmates.system.systemName ?? 'Player'
 
   // The typical set of pronouns people use is "external", i.e. used to describe them.
-  if (headmate.pronouns.length > 0) {
-    switch (headmate.pronounBehavior) {
+  if (headmates.pronouns.length > 0) {
+    switch (headmates.pronounBehavior) {
       case 'use name': break
       case 'use pronouns':
-        extSet = headmate.pronouns[0]
+        extSet = headmates.pronouns[0]
         break
       case 'cycle':
-        headmate.pronounAlted = (headmate.pronounAlted + 1) % headmate.pronouns.length
-        extSet = headmate.pronouns[headmate.pronounAlted]
+        headmates.pronounAlted = (headmates.pronounAlted + 1) % headmates.pronouns.length
+        extSet = headmates.pronouns[headmates.pronounAlted]
         break
       case 'randomize':
-        extSet = headmate.pronouns[Math.round(Math.random() * (headmate.pronouns.length - 1))]
+        extSet = headmates.pronouns[Math.round(Math.random() * (headmates.pronouns.length - 1))]
         break
-      default: headmate.pronounBehavior satisfies never // Catch missing TS cases
+      default: headmates.pronounBehavior satisfies never // Catch missing TS cases
     }
   }
   
-  switch (headmate.selfPronounBehavior) {
+  switch (headmates.selfPronounBehavior) {
     case 'use name': break
     case 'singular':
       selfSet = 'singular'
@@ -112,7 +111,7 @@ export function injectPronouns(headmate: headmate, soloFronting: boolean, str: s
       selfPlurality = 'selfPlural'
       extPlurality = 'otherPlural'
       break
-    default: headmate.selfPronounBehavior satisfies never // Catch missing TS cases
+    default: headmates.selfPronounBehavior satisfies never // Catch missing TS cases
   }
   
   const pronounFor = (index: number) => (extSet === 'appendForNames' ? name : Array.isArray(extSet) ? extSet[index] : pronouns[extSet][index])

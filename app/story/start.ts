@@ -30,8 +30,8 @@ export function init(): void {
             fork: {
                 name: '',
                 links: [],
-                arguments: [],
-                contents: ''
+                descriptors: [],
+                contentRaw: ''
             },
             forkOptions: []
         },

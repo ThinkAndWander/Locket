@@ -4,7 +4,7 @@ This guide is just for writers, not how anything is designed. Or the game elemen
 
 ## Get started!
 
-The story is written in [markdown](https://www.markdownguide.org/basic-syntax/) along with:
+The story is written exclusively in English, in [markdown](https://www.markdownguide.org/basic-syntax/) along with:
 - HTML tags, `<p>like this</p>`
 - Editor comments, `<!-- like this -->`
 - [Javascript](#javascript) `@@js like this @@`
@@ -37,7 +37,6 @@ The game also cares about energy, time and characters, and we use <a href="#all-
 @ My fork
 @@ people River, Gerald-Kyra
 @@ time 5 minutes
-@@ js special commands go here @@
 
 The reader can see this.
 ```

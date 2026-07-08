@@ -266,6 +266,9 @@ export type system = {
      * headmate's name. */
     systemName: string | undefined
 }
+
+/** An entry in the character definitions in characters.ts. */
+export type character = { self: system, id: number }
 //#endregion
 
 //#region Player and game state
@@ -337,6 +340,9 @@ export type game = {
         fork: fork,
         forkOptions: forkLink[]
     }
+
+    /** A log of unexpected warnings and errors produced by the game parser or elsewhere. */
+    log: log[]
 }
 
 /** Milestones */
@@ -376,23 +382,33 @@ export const enum timeUnit {
 //#endregion
 
 //#region story state and utilities
-/** A top-level token, sorted before anything else in the story text. */
+/** A top-level token, sorted before anything else in the story text. See WRITING.md. */
 export type fork = {
     /** A unique, lowercased and trimmed fork name of \w word characters. */
     name: string,
 
-    /** The contents of the fork, pre-processed only by javascript string interpolation. */
-    contents: string,
+    /** Raw fork contents. */
+    contentRaw: string,
 
-    /** The contents of the fork, also pre-processed with %placeholder injection. */
-    contentsTransformed?: string,
+    /** Fork contents after placeholder injection. */
+    contentParsed?: string,
 
-    /** Additional information associated to the fork and delimitted by commas. */
-    arguments: string[]
-
-    /** The links that the player can choose to leave the fork. */
-    links: forkLink[]
+    /** Additional, case-sensitive info associated to the fork. See WRITING.md. */
+    descriptors: forkDescriptors[]
 }
+
+/** The possible names of fork descriptors. Trimmed lowercase. See WRITING.md. */
+export const enum forkDescriptorName {
+    People = 'people',
+    Time = 'time',
+    Trigger = 'trigger',
+}
+
+/** The definitions of fork descriptors. Trimmed lowercase. See WRITING.md. */
+export type forkDescriptors = 
+    { name: forkDescriptorName.People, character: character, headmate?: headmate } |
+    { name: forkDescriptorName.Time, amount: number, unit: 'minutes' | 'hours' } |
+    { name: forkDescriptorName.Trigger, triggers: triggerWarning[] }
 
 /** Information for a clickable link to hyperlink to a different story section. */
 export type forkLink = {
@@ -401,6 +417,8 @@ export type forkLink = {
     
     /** The text displayed for the link. */
     text: string,
+
+    descriptors: linkDescriptors[],
 
     /** Choosing this link requires this much physical energy and subtracts it. */
     costPhysical: number,
@@ -411,6 +429,19 @@ export type forkLink = {
     /** Choosing this link requires this much mental energy and subtracts it. */
     costMental: number
 }
+
+/** The possible names of fork link descriptors. See WRITING.md. */
+export const enum linkDescriptorName {
+    Social = 'social',
+    Physical = 'physical',
+    Mental = 'mental'
+}
+
+/** The definitions of fork link descriptors. See WRITING.md. */
+export type linkDescriptors =
+    { name: linkDescriptorName.Social, amount: number } |
+    { name: linkDescriptorName.Physical, amount: number } |
+    { name: linkDescriptorName.Mental, amount: number }
 
 /** Tags used to indicate possible triggering content. If this list is extended, please review the existing storyline
  * and retroactively tag things as appropriate. */
@@ -435,5 +466,11 @@ export const enum triggerWarning {
 
     /** Some players have experienced or known someone homeless. "Our car passed a few tents on the road." */
     HomelessHardship = 'homeless hardship'
+}
+
+/** A very simple log definition to jot down errors and warnings during parsing, for developer convenience. */
+export type log = {
+    text: string,
+    type: 'warn' | 'err'
 }
 //#endregion

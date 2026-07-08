@@ -1,9 +1,8 @@
-import { headmate, newHeadmate } from "../core/model/headmates";
+import { newHeadmate } from "../core/model/headmates";
 import { pronouns } from "../core/model/pronouns";
-import { system } from "../core/model/system";
+import { system, headmate, character } from "../core/model/model";
 
 let _autoID = 0
-type character = { self: system, id: number }
 
 /** This is where known characters should be added. */
 export let characters: character[] = [
