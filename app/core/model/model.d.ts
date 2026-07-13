@@ -344,6 +344,13 @@ export type game = {
 
     /** A log of unexpected warnings and errors produced by the game parser or elsewhere. */
     log: log[]
+
+    /** Story code might like a place to define vars, and this helps it do so without writing const, due to how
+     * object properties work. Making it explicit also makes it easier to track and lets us say "if it's not defined
+     * here, there are no guarantees about it". One of those guarantees is functions: we can't save functions, but if
+     * we can at least expect and programmatically find them here, we can stringify them and reconstitute it later.
+     * Like all story code, it's not XSS safe. */
+    codecontext: {}
 }
 
 /** Milestones */

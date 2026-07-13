@@ -47,7 +47,8 @@ export function init(): void {
             noAnimation: false
         },
         gameOptions: {},
-        log: []
+        log: [],
+        codecontext: {}
     }
 
     // Adds a player, then initializes both parser and display

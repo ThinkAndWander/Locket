@@ -1,10 +1,12 @@
 #!/bin/bash
 set -e
 
-# Copy the story to the website build so story.md can keep its MD file extension for ease-of-use.
-echo "export const mainStory = \`" > "app/story.md.ts"
-cat "story.md" >> "app/story.md.ts"
-echo "\`" >> "app/story.md.ts"
+# Copy the story to the website build so story.md can keep its MD file extension.
+# Do this first so it gets picked up with compilation
+cp -f "story.md" "app/story.md.ts" # copy and overwrite from source
+sed -i 's/`/\\`/g' "app/story.md.ts" # escape backticks so the user can type them plainly
+sed -i -z 's/^/export const mainStory = \`/' "app/story.md.ts" # prepend a name so it can be accessed
+echo "\`" >> "app/story.md.ts" # append the last backtick making it an exported string literal
 
 # Compile app/main.ts into build/app/main.js and dependencies
 npx tsc

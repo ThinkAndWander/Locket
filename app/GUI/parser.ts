@@ -33,7 +33,7 @@ export function initParsing(game: game) {
 
                 if (token.type === 'code' || token.type === 'codespan') {
                     try {
-                        let result = Function("game", "characters", token.text)(game, characters)
+                        let result = Function("game", "characters", "c", token.text)(game, characters, game.codecontext)
 
                         // Mutate the token to a Text token of the containing text without breaking refs.
                         if (typeof result === 'boolean' ||
@@ -41,13 +41,10 @@ export function initParsing(game: game) {
                             typeof result === 'string')
                         {
                             result = `${result}`
-                            token = {
-                                ...token,
-                                type: "text",
-                                text: result,
-                                raw: result,
-                                escaped: false
-                            } satisfies marked.Tokens.Text
+                            token.type = "text"
+                            token.text = result
+                            ;(token as marked.Tokens.Text).raw = result
+                            ;(token as marked.Tokens.Text).escaped = false
                             return true
                         }
                     } catch (err) {
@@ -145,7 +142,7 @@ export function separateIntoForks(game: game, str: string): fork[] {
             }
         }
 
-        const forkName = match[0].trim().toLowerCase()
+        const forkName = match[0].replaceAll(/\s*/gm, '').toLowerCase()
         lastIndex = match.index
 
         if (index === matches.length - 1) {
@@ -157,7 +154,7 @@ export function separateIntoForks(game: game, str: string): fork[] {
             }
         }
 
-        lastForkName = match[0].trim().toLowerCase()
+        lastForkName = match[0].replaceAll(/\s*/gm, '').toLowerCase()
     })
 
     // There is always one remaining fork.
