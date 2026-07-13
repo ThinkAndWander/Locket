@@ -1,9 +1,13 @@
+import { forkLink } from "../core/model/model"
+
 let _container: HTMLDivElement // Container.
 let _out: HTMLDivElement // Output region.
 let _in: HTMLTextAreaElement // Input textbox.
 
 /** Subscribers to input submission. */
 let _onInputSubmitted: ((input: string) => void)[] = []
+
+let _everInitDisplay = false
 
 /** Handles submission. */
 function _onInputKey(kbEvent: KeyboardEvent): void {
@@ -16,6 +20,9 @@ function _onInputKey(kbEvent: KeyboardEvent): void {
 
 /** Initializes the display elements for the game. */
 export function initDisplay(): void {
+    if (_everInitDisplay) { return }
+    _everInitDisplay = true
+
     _container = document.createElement('div')
     _container.style.display = 'flex'
     _container.style.flexDirection = 'column'
@@ -34,6 +41,8 @@ export function initDisplay(): void {
     _in.enterKeyHint = 'Submit'
     _in.spellcheck = false
     _container.appendChild(_in)
+
+    showInput(false) // Hide by default.
 }
 
 /** Append any HTML element to the output. If all output is cleared, use the "autofocus" property on the first item to
@@ -60,8 +69,10 @@ export function subscribeInputListener(callback: (input: string) => void): void 
 export function showInput(show?: boolean): void {
     if (show) {
         _in.style.display = ''
+        _in.disabled = false
     } else {
         _in.style.display = 'none'
+        _in.disabled = true
     }
 }
 

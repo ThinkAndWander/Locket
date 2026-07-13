@@ -1,5 +1,5 @@
 import { newHeadmate } from "../core/model/headmates";
-import { pronouns } from "../core/model/pronouns";
+import { pronouns } from "../core/model/placeholders";
 import { system, headmate, character } from "../core/model/model";
 
 let _autoID = 0
@@ -10,7 +10,7 @@ export let characters: character[] = [
         name: 'Jane Doe',
         attributes: ["amenable"],
         bodyAttractPreference: "none",
-        pronouns: [pronouns.they]
+        pronouns3P: [pronouns.they]
     })
 ]
 

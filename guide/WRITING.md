@@ -84,11 +84,13 @@ The player's plurality, gender and choice to be referred to only by name are all
 The placeholders are based on `I` and `they` for familiarity and easier support, but the correct ones will be used.
 
 **Player name**  
-To get the player name(s), use `%name`. You may need to consider potential plurality in grammar usage, here.
+Because of plurality, all player name placeholders are written as having multiple names so that it's easier to perceive how they'll be injected into the story.
 ```js
-%name or me // Mary or Bob or me
-(%name) or me // (Mary or Bob) or me
-%name, or me // Mary or Bob, or me
+"%(name, name)" // Mary, Bob, Sue
+"%(name, and name)" // Mary, Bob and Sue
+"%(name, or name)" // Mary, Bob or Sue
+"%(name or name)" // Mary or Bob or Sue
+"%(name and name)" // Mary and Bob and Sue
 ```
 
 **Player referring to themself**  
@@ -106,20 +108,20 @@ To get the player name(s), use `%name`. You may need to consider potential plura
 `%do` `%is`
 
 **Subject-matching suffix**  
-`%s` (e.g. "they want%s")
+`%s` (e.g. "%they want%s")
 
 Placeholders are written as though the player refers to themself with I and others refer to the player as they. They still turn into the preferred pronouns or player's name, considering plurality. Here are a few examples:
 ```json
 // Placeholders are used in relation to player
 %I want%s %my chance
-%name? %they would.
+%(name, and name)? %they would.
 %they said so
 What %do %they want
 %I really %do.
 
 // Examples in relation to others, or mixed player relation
 %I think he's neat.
-%name and Brenna? They are over there
+%(name, name) and Brenna? They are over there
 %me and them? We're here!
 %they'll see.
 ```
@@ -190,23 +192,26 @@ Text-to-speech (screen reader) support is essential. Use punctuation precisely, 
 | Rhetoricals            | I thought it wasn't?               | I thought it wasn't question mark                                                    |
 | Unclear voice          | They paused. "Why?" You're unsure. | They paused and asked why? You're unsure.                                            |
 
-| **Situation**        | **Unfriendly**       | **Screen reader friendly**                |
-|----------------------|---------------------:|-------------------------------------------|
-| Stretching words     | Streeetch            | Stree-etch<br/> Streh-eh-eh-etch          |
-| Spacing words        | s p a c e words      | spuh, ace. words<br/> S P A C E words     |
-| All caps             | WHAT IS IT, they ask | All caps what is it, they ask             |
-| Caps emphasis        | cast The Spell       | Cast the capital S pell                   |
-| Cut off words        | Hotdog and mustar- oh.| Hotdog and muster- oh.                   |
-| Ellipses at ends     | ...I don't know...   | dot dot dot I don't know dot dot dot      |
-| Fast speech          | IlovecaffeineyesIdo  | I love caffeine yes I do                  |
-| Meaningful typos     | Hai! Prns?           | H A I! Pronouns?                          |
-| text acronyms        | woah fr? ok. ttyl    | Woah F R? Ok. T T Y L                     |
-| Visual decoration    | ⊹₊Rainbow₊⊹ wav3    | Rainbow wave                              |
-| Meaningful emojis    | Hi :3 Burn ✨       | Hi, colon 3. Burn, sparkles emoji         |
-| Emojis as words      | The ☕ is 🦊ed up   | The tea, emoji, is foxed up, emoji        |
-| Lingual shorthands   | 2 * 6, 5'2", 3µ      | 2 times 6, 5 foot 2, 3 microns            |
-| Literal characters   | code_run();          | code underscore run parentheses semicolon |
-| A big number         | 35623521             | 35,623,521                                |
+| **Situation**        | **Unfriendly**        | **Screen reader friendly**                |
+|----------------------|----------------------:|-------------------------------------------|
+| Stretching words     | Streeetch             | Stree-etch<br/> Streh-eh-eh-etch          |
+| Spacing words        | s p a c e words       | spuh, ace. words<br/> S P A C E words     |
+| stuttering speech    | c-c-cover me slowly   | kuh-kuh-cover me slowly                   |
+| All caps             | WHAT IS IT, they ask  | All caps what is it, they ask             |
+| sArCaSm caps         | gReAt iDEa!           | Mixed caps great idea                     |
+| Caps emphasis        | cast The Spell        | Cast the capital S pell                   |
+| Cut off words        | Hotdog and mustar- oh.| Hotdog and muster- oh.                    |
+| Ellipses at ends     | ...I don't know...    | dot dot dot I don't know dot dot dot      |
+| Fast speech          | IlovecaffeineyesIdo   | I love caffeine yes I do                  |
+| Meaningful typos     | Hai! Prns?            | H A I! Pronouns?                          |
+| text acronyms        | woah fr? ok. ttyl     | Woah F R? Ok. T T Y L                     |
+| Visual decoration    | ⊹₊Rainbow₊⊹ wav3     | Rainbow wave                              |
+| Meaningful emojis    | Hi :3 Burn ✨        | Hi, colon 3. Burn, sparkles emoji         |
+| Emojis as words      | The ☕ is 🦊ed up    | The tea, emoji, is foxed up, emoji        |
+| Lingual shorthands   | 2 * 6, 5'2", 3µ       | 2 times 6, 5 foot 2, 3 microns            |
+| Literal characters   | code_run();           | code underscore run parentheses semicolon |
+| A big number         | 35623521              | 35,623,521                                |
+| Number separations   | 911 in 1985. 9/11     | 9 1 1 in 19 85. 9 11                      |
 
 Writing is at discretion. Try to keep and not add any meaning sighted users don't have.
 

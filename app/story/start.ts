@@ -1,18 +1,23 @@
 import { newHeadmate } from "../core/model/headmates"
+import { game } from "../core/model/model"
 import { loadedLocalStorage, loadFromLocalStorage } from "../core/persistence"
 import { initDisplay } from "../GUI/display"
-import { game } from "../core/model/model"
+import { initParsing, jumpToFork, separateIntoForks } from "../GUI/parser"
+import { mainStory } from "../story.md"
 
 /** The active game, including all options, fork details and player details. This is the running game; the static
  * content is stored in various files such as story.md and the app/story folder. */
 let game: game | undefined
+let hasEverRanInit = false
 
 export function init(): void {
+    if (hasEverRanInit) { return }
+    hasEverRanInit = true
 
-    loadFromLocalStorage() // Keep this call first
-    initDisplay()
+    // Keep this call first
+    loadFromLocalStorage()
 
-    // Initializes the game.
+    // Initializes the game
     game = {
         player: {
             milestones: loadedLocalStorage.milestones,
@@ -29,11 +34,11 @@ export function init(): void {
         story: {
             fork: {
                 name: '',
-                links: [],
                 descriptors: [],
                 contentRaw: ''
             },
-            forkOptions: []
+            links: [],
+            forks: []
         },
         appOptions: {
             blockedTriggers: [],
@@ -41,11 +46,19 @@ export function init(): void {
             volumes: [1, 1, 1, 1],
             noAnimation: false
         },
-        gameOptions: {}
+        gameOptions: {},
+        log: []
     }
 
+    // Adds a player, then initializes both parser and display
     game.player.system.headmates.push(newHeadmate(game.player.system))
+    initParsing(game)
+    initDisplay()
 
-    // Parse the story for display.
-    // The parser should expose this and we call it here. TODO
+    // Pre-parses the main story into its forks and sets the active fork.
+    game.story.forks = separateIntoForks(game, mainStory)
+
+    if (game.story.forks.length > 0) {
+        jumpToFork(game, game.story.forks[0])
+    }
 }

@@ -1,6 +1,6 @@
 import { isFronting, newHeadmate } from "./headmates"
 import { attribute, headmate, frontingPresenceType, stat, system } from "./model"
-import { pronouns } from "./pronouns"
+import { pronouns } from "./placeholders"
 
 /** Returns the number of fronting headmates (anonymous and known), and all known headmates. */
 export function getFronters(character: system): { headmates: headmate[], count: number } {
@@ -37,13 +37,13 @@ export function getCombinedIdentity(character: system): headmate {
                 presentCount++
                 if (presentCount === 1) {
                     combined.pronounBehavior = headmate.pronounBehavior
-                    combined.selfPronounBehavior = headmate.selfPronounBehavior
-                    combined.pronouns.concat(headmate.pronouns)
+                    combined.pronouns1P = headmate.pronouns1P
+                    combined.pronouns3P.concat(headmate.pronouns3P)
                     combined.name = headmate.name
                 } else if (presentCount === 2) {
                     combined.pronounBehavior = 'use name'
-                    combined.selfPronounBehavior = 'always plural'
-                    combined.pronouns = [pronouns.they]
+                    combined.pronouns1P = 'always plural'
+                    combined.pronouns3P = [pronouns.they]
                     combined.name = undefined
                 }
             }

@@ -48,8 +48,8 @@ export function newHeadmate(system: system): headmate {
         name: undefined,
         pronounAlted: 0,
         pronounBehavior: "use pronouns",
-        pronouns: ["they"],
-        selfPronounBehavior: "singular",
+        pronouns3P: ["they"],
+        pronouns1P: "singular",
         reactions: {
             statChanges: {},
             attributeChanges: {},

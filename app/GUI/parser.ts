@@ -1,60 +1,179 @@
 /** The story is written directly in a superset of Markdown; see the readme. */
 
-import { marked, Marked } from 'marked'
-import { mainStory } from '../story.md'
-import { injectPronouns } from '../core/model/pronouns'
+import * as marked from 'marked'
+import { injectPronouns } from '../core/model/placeholders'
 import { getFronters } from '../core/model/system'
 import { outputHTML } from './display'
-import { character, fork, forkDescriptorName, forkDescriptors, game, linkDescriptorName, linkDescriptors, triggerWarning } from '../core/model/model'
+import { character, fork, forkDescriptorName, forkDescriptors, forkLink, game, linkDescriptorName, linkDescriptors, triggerWarning } from '../core/model/model'
+import { characters } from '../story/characters'
 
 /** Fork name: string start, @ symbol, any whitespace, 1+ words and any remaining words or whitespace. */
-const untrimmed_fork_name = /(?<=^@)\s*\w+(\w|\s)*/gum
+const _untrimmed_fork_name = /(?<=^@)\s*\w+(\w| )*/gum
 
-/** For descriptor: string start, 2 @ symbols, any whitespace, 1+ words and any remaining words, whitespace or commas. */
-const untrimmed_fork_descriptor = /(?<=^@@)\s*\w+(\w|\s|,)*/gum
+/** Fork descriptor: string start, 2 @ symbols, any whitespace, 1+ words and any remaining words, whitespace or commas. */
+const _untrimmed_fork_descriptor = /(?<=^@@)\s*\w+(\w| |,)*/gum
+
+let _everInitParsing = false
+
+/** Extends the Marked.js engine to handle fork links, alted text, and code eval. Call once. */
+export function initParsing(game: game) {
+    if (_everInitParsing) { return }
+    _everInitParsing = true
+
+    marked.use({ hooks: {
+        processAllTokens: tokens => {
+            /** Recurse to eval Code tokens, mutating in-place (preserves parent refs to child), or filtering */
+            const resolveCodeToken = (token: marked.Token): boolean => {
+                // Recursive iteration. Many tokens have a "tokens" attribute and some like TableCell are hard to test
+                // for, so do it generically.
+                if (Array.isArray((token as any).tokens)) {
+                    const tokens = (token as any).tokens as marked.Token[]
+                    (token as any).tokens = tokens.filter(token => resolveCodeToken(token))
+                }
+
+                if (token.type === 'code' || token.type === 'codespan') {
+                    try {
+                        let result = Function("game", "characters", token.text)(game, characters)
+
+                        // Mutate the token to a Text token of the containing text without breaking refs.
+                        if (typeof result === 'boolean' ||
+                            typeof result === 'number' ||
+                            typeof result === 'string')
+                        {
+                            result = `${result}`
+                            token = {
+                                ...token,
+                                type: "text",
+                                text: result,
+                                raw: result,
+                                escaped: false
+                            } satisfies marked.Tokens.Text
+                            return true
+                        }
+                    } catch (err) {
+                        game.log.push({ type: "warn", text: `In fork "${game.story.fork.name}", user code had an error: ${err}` })
+                    }
+
+                    return false // discard code tokens that have no valid return value
+                }
+                
+                return true // keep unrelated tokens
+            }
+
+            /** Recurse to selectively replace overriden link syntax by replacing parent */
+            const resolveLinkToken = (list: marked.Token[], index: number): void => {
+                const token = list[index]
+                // Recursive iteration. Many tokens have a "tokens" attribute and some like TableCell are hard to test
+                // for, so do it generically.
+                if (Array.isArray((token as any).tokens)) {
+                    const tokens = (token as any).tokens as marked.Token[]
+                    for (let i = 0; i < tokens.length; i++) {
+                        resolveLinkToken(tokens, i)
+                    }
+                }
+
+                // Override for alt text replacement and fork links
+                if (token.type === 'link') {
+                    const urlForkOrAlt = (token.href as string).trim().toLowerCase()
+
+                    // Track the fork link and format into an HTML token, replacing this one
+                    if (urlForkOrAlt.startsWith('@')) {
+                        const withoutAtSymbol = urlForkOrAlt.substring(1)
+                        const link = processLink(game, token.text, withoutAtSymbol)
+                        const button = _createForkLink(link)
+                        game.story.links.push(link)
+                        list[index] = {
+                            block: false,
+                            pre: false,
+                            raw: button.outerHTML,
+                            text: button.outerHTML,
+                            type: 'html'
+                        } satisfies marked.Tokens.HTML
+                    }
+
+                    // Treat as alt text of text
+                    else if (!urlForkOrAlt.startsWith('http') &&
+                        !urlForkOrAlt.startsWith('www') &&
+                        !urlForkOrAlt.endsWith('.com'))
+                    {
+                        const alted = _createAltedText(token.text, (token.href as string).trim())
+                        const asHTML = alted.map(span => span.outerHTML).join('')
+                        list[index] = {
+                            block: false,
+                            pre: false,
+                            raw: asHTML,
+                            text: asHTML,
+                            type: 'html'
+                        } satisfies marked.Tokens.HTML
+                    }
+                }
+            }
+
+            // Evals all code in the Markdown, consuming the code token entirely and producing a new text token in
+            // its place, if it returns a bool/number/string. Fills the newTokens array.
+
+            // Evals code tokens, possibly mutating to a Text token, else omitting. Other tokens pass through.
+            tokens = tokens.filter(token => resolveCodeToken(token))
+
+            // Mutates fork links and alt text to an HTML token. All else passes through.
+            for (let i = 0; i < tokens.length; i++) {
+                resolveLinkToken(tokens, i)
+            }
+
+            return tokens
+        }
+    } })
+}
 
 //#region First-time parsing of story.md
 /** 
  * Finds all fork headers with syntax "\@fork name" which are at the start of a line, and breaks the text into groups
  * based on that. This is parsing step 1. */
-function separateIntoForks(game: game, str: string): fork[] {
-    const matches = str.matchAll(untrimmed_fork_name)
+export function separateIntoForks(game: game, str: string): fork[] {
+    const matches = Array.from(str.matchAll(_untrimmed_fork_name))
     const forks: fork[] = []
     let lastIndex = 0
+    let lastForkName = ""
 
-    for (const match of matches) {
-        const forkName = match[0].trim().toLowerCase()
-        if (forkName.length > 0 && !forks.some(forkDef => forkDef.name === forkName)) {
-            if (lastIndex !== 0) {
-                const content = str.substring(lastIndex, match.index).trim()
-                if (content !== '') {
-                    const fork = processFork(game, forkName, content)
-                    forks.push(fork)
-
-                    if (fork.links.length === 0) {
-                        game.log.push({ type: "warn", text: `The fork "${fork.name}" has no links` })
-                    }
-                } else {
-                    game.log.push({ type: "warn", text: `The fork "${forkName}" has no contents` })
-                }
+    matches.forEach((match, index) => {
+        if (lastIndex !== 0) {
+            const content = str.substring(lastIndex, match.index - 1).trim()
+            if (content !== '') {
+                forks.push(processFork(game, lastForkName, content))
+            } else {
+                game.log.push({ type: "warn", text: `The fork "${lastForkName}" has no contents` })
             }
-
-            lastIndex = match.index
-        } else if (forkName.length === 0) {
-            game.log.push({ type: "err", text: `A fork name with no name was found; check for lines starting with @ and no word characters`})
-        } else {
-            game.log.push({ type: "err", text: `Fork name "${forkName}" appears more than once.` })
         }
+
+        const forkName = match[0].trim().toLowerCase()
+        lastIndex = match.index
+
+        if (index === matches.length - 1) {
+            const content = str.substring(lastIndex + match[0].length).trim()
+            if (content !== '') {
+                forks.push(processFork(game, forkName, content))
+            } else {
+                game.log.push({ type: "warn", text: `The fork "${forkName}" has no contents` })
+            }
+        }
+
+        lastForkName = match[0].trim().toLowerCase()
+    })
+
+    // There is always one remaining fork.
+
+    if (forks.length === 0) {
+        game.log.push({ type: "err", text: "No forks were found!" })
     }
 
     return forks
 }
 
-/** Returns a valid fork, including descriptors and links. The content is not parsed except to remove fork names and
+/** Returns a fork with descriptors. Content and links to other forks are not parsed except to remove fork names and
  * descriptors. Fork links must wait until code and placeholders are processed, since they depend on dynamic content
  * (code can create fork links) that is known only when the fork is visited in-game. */
 function processFork(game: game, name: string, content: string): fork {
-    const forkDescriptorMatches = content.matchAll(untrimmed_fork_descriptor)
+    const forkDescriptorMatches = content.matchAll(_untrimmed_fork_descriptor)
     
     // Processes all fork descriptors anywhere in the fork.
     const descriptors: forkDescriptors[] = []
@@ -73,8 +192,7 @@ function processFork(game: game, name: string, content: string): fork {
     return {
         name: name,
         contentRaw: content,
-        descriptors: descriptors,
-        links: [] // TODO: define this too
+        descriptors: descriptors
     }
 }
 
@@ -171,212 +289,114 @@ function processForkDescriptor(game: game, str: string): forkDescriptors | undef
     return undefined
 }
 
-function loadForkInGame(game: game, fork: fork) {
-    game.story.fork = fork
+/** Returns a fork link definition, omitting bad descriptors and logging errors. */
+function processLink(game: game, textPart: string, urlPart: string): forkLink {
+    const newDescriptors: linkDescriptors[] = []
+    const allDescriptors = urlPart.split(',').map(o => o.trim().toLowerCase())
+    const forkToLinkTo = allDescriptors.splice(0, 1)[0]
 
-    // Inject all placeholders
-    const frontingList = getFronters(game.player.system)
-    fork.contentParsed = injectPronouns(frontingList.headmates[0], frontingList.count === 1, fork.contentRaw);
-
-    //game.story.fork.contentRaw
-    
-    fork.contentParsed = injectPronouns(frontingList.headmates[0], frontingList.count === 1, fork.contentRaw)
-
-    marked.parse(fork.contentRaw)
-
-    const codeOnly = (token: Token) => {
-        if (token.type === 'code') {
-
-        }
-        if (token.type === 'link') {
-
-            // Parse these as fork links.
-            if (token.href.trim().startsWith("@")) {
-                game.story.
-
-                // Zero out the token so it won't render.
-                token.raw = "[]()"
-                token.text = ""
-                token.title = ""
-                token.href = ""
-            }
-        }
-    };
-  
-    marked.use({ walkTokens });
-}
-
-/** Returns a fully valid fork link descriptor, or undefined with errors logged. */
-function processLinkDescriptor(game: game, str: string): linkDescriptors | undefined {
-    const args = str.split(',').map(o => o.trim().toLowerCase())
-
-    if (args.length > 0) {
-        const name = args.splice(0, 1)[0] as linkDescriptorName
-        switch (name) {
-            case linkDescriptorName.Mental:
-            case linkDescriptorName.Physical:
-            case linkDescriptorName.Social:
-                if (Number.isSafeInteger(args[1])) {
-                    return {
-                        name: name,
-                        amount: +args[1]
+    for (const entry of allDescriptors) {
+        const args = entry.split(/\w*/g).map(o => o.trim())
+        
+        if (args.length > 0) {
+            const name = args.splice(0, 1)[0] as linkDescriptorName
+            switch (name) {
+                case linkDescriptorName.Mental:
+                case linkDescriptorName.Physical:
+                case linkDescriptorName.Social:
+                    if (Number.isSafeInteger(args[1])) {
+                        newDescriptors.push({
+                            name: name,
+                            amount: +args[1]
+                        })
+                        continue
+                    } else {
+                        game.log.push({ type: "err", text: `Fork link descriptor "${name}" has invalid amount: "${args[1]}"` })
                     }
-                } else {
-                    game.log.push({ type: "err", text: `Fork link descriptor "${name}" has invalid amount: "${args[1]}"` })
-                }
-                break
-            default: name satisfies never // catch missing TS cases
-                game.log.push({ type: "err", text: `Unknown fork link descriptor: "${name}"` })
-                break
+                    break
+                default: name satisfies never // catch missing TS cases
+                    game.log.push({ type: "err", text: `Unknown fork link descriptor: "${name}"` })
+                    break
+            }
+        } else {
+            game.log.push({ type: "err", text: `Fork link descriptor "${urlPart}" is invalid.` })
+            continue
         }
-    } else {
-        game.log.push({ type: "err", text: `Fork link descriptor "${str}" is invalid.` })
-        return undefined
+    
+        game.log.push({ type: "err", text: `Fork link descriptor "${urlPart}" is not valid and was skipped.` })
     }
 
-    game.log.push({ type: "err", text: `Fork link descriptor "${str}" is not valid and was skipped.` })
-    return undefined
+    return {
+        name: forkToLinkTo,
+        text: textPart,
+        descriptors: newDescriptors
+    }
 }
 //#endregion
 
-/** When a fork loads, this is performed. */
-export function handleFork(game: game, fork: fork): void {
-    const marked = new Marked().use({
-        walkTokens: (token) => {
-            // Finds fork options
-            if (token.type === 'link') {
-                if (typeof(token.href) === 'string' && token.href.startsWith('@')) {
-                    const matches = token.href.matchAll(untrimmed_fork_name)
+/** Loads a fork by setting the game's current fork and options, parsing the fork contents, and sending them to display. */
+export function jumpToFork(game: game, fork: fork) {
+    game.story.fork = fork
 
-                        for (const match of matches) {
-                            const nameAndArguments = match.input.split(',')
-                            game.story.fork.links.push({
-                                name: nameAndArguments[0].trim().toLowerCase(),
-                                text: token.text,
-                                costMental: 0,
-                                costPhysical: 0,
-                                costSocial: 0
-                            })
-                        }
-                }
-            }
-        }
-    })
-
-    // First, injects placeholders.
+    // Inject placeholders
     const frontingList = getFronters(game.player.system)
-    fork.contentParsed = injectPronouns(frontingList.headmates[0], frontingList.count === 1, fork.contentRaw)
+    fork.contentParsed = injectPronouns(frontingList.headmates[0], fork.contentRaw, frontingList.count === 1);
 
-    // Second, identifies and removes links from the main text.
-    // TODO: HANDLE THIS CASE
-
-    // Finally, the given pre-processed fork content and displays the resulting HTML.
+    // Output to HTML. Executes user code, handles fork options and alted text as side effects.
     const html = marked.parse(fork.contentParsed ?? fork.contentRaw, { gfm: true, breaks: true }) as string
     const container = document.createElement('span')
     container.setHTMLUnsafe(html)
+
+    /** Uses data-forkname to attach a click event based on matching a known fork name. It's set lowercase and trimmed,
+     * so it's assumed to be so in comparison. */
+    const attachForkLinkEvents = (node: ChildNode) => {
+        node.childNodes.forEach(node => {
+            attachForkLinkEvents(node)
+        })
+
+        if (node.nodeType === node.ELEMENT_NODE && (node as HTMLElement).tagName === 'BUTTON') {
+            const button = node as HTMLButtonElement
+            const forkNameIfAny = button.getAttribute('data-forkname')
+            if (forkNameIfAny) {
+                button.addEventListener('click', () => {
+                    game.story.forks.some(fork => {
+                        if (fork.name === forkNameIfAny) {
+                            jumpToFork(game, fork)
+                            return true
+                        }
+
+                        return false
+                    })
+                })
+            }
+        }
+    }
+
+    attachForkLinkEvents(container)
     outputHTML(true, container)
 }
 
-export function runForkEngine(game: game): void {
+/** Formats and returns a button based on the given link. */
+function _createForkLink(link: forkLink): HTMLButtonElement {
+    const button = document.createElement('button')
+    button.classList.add('forkOption')
+    button.textContent = link.text
 
-    const allForks: fork[] = separateIntoForks(mainStory)
-    handleFork(game, allForks[0])
-
-    // Override function
-    const walkTokens = (token: Token) => {
-        if (token.type === 'link') {
-
-            // Parse these as fork links.
-            if (token.href.trim().startsWith("@")) {
-                // Zero out the token so it won't render.
-                token.raw = "[]()"
-                token.text = ""
-                token.title = ""
-                token.href = ""
-            }
-        }
-    };
-  
-  marked.use({ walkTokens });
+    // Track link name to hook click handler later, since Marked.js renders html from string and this will get lost.
+    button.setAttribute('data-forkname', link.name)
+    return button
 }
 
+/** Given text to show and speak, returns two spans configured so the 1st will show text that screen readers skip over,
+ * and the second will be read by screen readers but remain invisible. This is used to create alt text for TEXT, to
+ * fill a gap in HTML handling of screen reader support. See the "Supporting screen readers" section of WRITING.md. */
+function _createAltedText(show: string, speak: string): HTMLSpanElement[] {
+    const toShow = document.createElement('span')
+    toShow.ariaHidden = 'true'
+    toShow.textContent = show
+    const toSpeak = document.createElement('span')
+    toSpeak.classList.add('sr-only')
+    toSpeak.textContent = speak
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import type { MarkedExtension, Hooks, Token } from 'marked'
-import { characters } from '../story/characters'
-
-/**
- * A [marked](https://marked.js.org/) extension that overrides ```js blocks to run them as the body of a new function,
- * providing context to access the game, characters, and utility functions.
- */
-function jsBlockExecution(): MarkedExtension {
-  return {
-    name: 'code',
-    level: 'block',
-    tokenizer: (_, parent) => {
-        parent.forEach(token => {
-            if (token.type !== 'code' || token.lang !== 'js' || !token.text) {
-                return
-            }
-
-            // do stuff here
-        })
-
-        return false
-    }
-  }
+    return [ toShow, toSpeak ]
 }

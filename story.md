@@ -1,14 +1,9 @@
-## Life and God
+@ Life and God
 
-think about it. What do you have to lose? There are countless stars out there, countless places to attend one's eyes.
+**Hello**. [alt](hidden). I wonder...
 
-Why here? Why now?
+[Go to](@Death)
 
-What is so great that in this place,
-in this *time*,
+@ Death
 
-we find ourselves alone.
-
-> Consider
-
-That which is gone from us
+you are here now.

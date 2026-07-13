@@ -1,4 +1,4 @@
-import { pronounSet } from "./pronouns"
+import { pronounSet } from "./placeholders"
 
 //#region headmate variables
 /** Memories are events and associations. */
@@ -240,17 +240,17 @@ export type headmate = {
     /** Identifies the pronoun set to use, or uses a custom one. Do not make associations between pronouns, gender, and
      * sex because they're not inherently related. Many players do not match them all. Pronouns can be changed to
      * support gender fluidity, genderqueer and similar needs. */
-    pronouns: (pronounSet | [string, string, string, string, string])[]
+    pronouns3P: (pronounSet | [string, string, string, string, string])[]
+
+    /** How pronouns are used when referring to oneself. Singlets use singular pronoun behavior by default. Systems use
+     * plural by default and may use singular as it makes sense contextually, unless always plural is chosen. If use
+     * name is chosen for pronouns, it affects self pronouns too until changed. */
+    pronouns1P: "singular" | "use name" | "plural" | "always plural"
 
     /** By default, headmates are referred to by their first chosen pronoun. Alternatively, they can be referred to by
      * their name, in which case the system name is preferred when multiple headmates are fronting. Cycling to the next
      * pronoun each time it's called for is also an option, as is randomly picking (can pick the same in a row too). */
     pronounBehavior: "use pronouns" | "use name" | "cycle" | "randomize",
-
-    /** How pronouns are used when referring to oneself. Singlets use singular pronoun behavior by default. Systems use
-     * plural by default and may use singular as it makes sense contextually, unless always plural is chosen. If use
-     * name is chosen for pronouns, it affects self pronouns too until changed. */
-    selfPronounBehavior: "singular" | "use name" | "plural" | "always plural"
 
     /** Part of changing game data that identifies the current pronoun set to use, if alternation rules are in use. */
     pronounAlted: number
@@ -335,10 +335,11 @@ export type game = {
     /** Options across the app, mostly about usage and settings like volume. */
     appOptions: appOptions
 
-    /** This is the story branching state of data. */
+    /** The story branching state of data. */
     story: {
         fork: fork,
-        forkOptions: forkLink[]
+        links: forkLink[],
+        forks: fork[]
     }
 
     /** A log of unexpected warnings and errors produced by the game parser or elsewhere. */
@@ -418,16 +419,8 @@ export type forkLink = {
     /** The text displayed for the link. */
     text: string,
 
+    /** Options affecting a fork link, such as energy costs. */
     descriptors: linkDescriptors[],
-
-    /** Choosing this link requires this much physical energy and subtracts it. */
-    costPhysical: number,
-
-    /** Choosing this link requires this much social energy and subtracts it. */
-    costSocial: number,
-
-    /** Choosing this link requires this much mental energy and subtracts it. */
-    costMental: number
 }
 
 /** The possible names of fork link descriptors. See WRITING.md. */

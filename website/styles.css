@@ -1,11 +1,6 @@
 .forkOption {
-    text-decoration-line: underline;
+    padding: 1rem;
 }
-
-/** When themes are used, these will be applied. */
-.themedWidget {}
-.themedBgColor {}
-.themedText {}
 
 /** Screen reader only. The inverse is aria-hidden=true. Recommended by WebAIM. https://webaim.org/techniques/css/invisiblecontent/ */
 .sr-only {
