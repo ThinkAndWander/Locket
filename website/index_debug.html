@@ -1,33 +1,135 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-<head>
-    <script type="text/javascript" src="mainapp.js" defer></script>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="application-name" content="Locket" />
-    <link rel="icon" type="image/x-icon" href="./favicon.ico" />
-    <meta name="apple-mobile-web-app-title" content="Locket">
-    <meta name="description" content="A cozy slice-of-life adventure where you find the meaning of life by living." />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="theme-color" content="#CCFFCC"/>
-    <meta name="msapplication-TileColor" content="#8fa620" />
-    <meta name="msapplication-config" content="./browserconfig.xml" />
-    <meta name="format-detection" content="telephone=no" />
-    <meta property="og:image" content="./icon_maskable_192.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
-    <link rel="manifest" href="./manifest.webmanifest" />
-    <link rel="stylesheet" href="./styles.css" />
-    <title>Locket</title>
-</head>
-<body>
-    <div>
+    <head>
+        <script src="mainapp.js" defer></script>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="application-name" content="Locket">
+        <link rel="icon" type="image/x-icon" href="./favicon.ico">
+        <meta name="apple-mobile-web-app-title" content="Locket">
+        <meta name="description" content="A cozy slice-of-life adventure where you find the meaning of life by living.">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="theme-color" content="#CCFFCC">
+        <meta name="msapplication-TileColor" content="#8fa620">
+        <meta name="msapplication-config" content="./browserconfig.xml">
+        <meta name="format-detection" content="telephone=no">
+        <meta property="og:image" content="./icon_maskable_192.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
+        <link rel="manifest" href="./manifest.webmanifest">
+        <link rel="stylesheet" href="./styles.css">
+        <title>Locket</title>
+    </head>
+    <body>
         <noscript>
             <p>
                 You don't have Javascript enabled. This game needs Javascript to work, sorry!
             </p>
         </noscript>
-    </div>
-</body>
+        <div id="overlay"></div> <!-- Used to reduce contrast or add colored light for reading. -->
+        <div id="bodyContainer">
+            <header id="headerBar">
+                <button id="headerSettings">Settings</button>
+            </header>
+            <main id="mainColumn">
+                <div id="outputArea" aria-live="polite"></div>
+                <textarea id="inputArea" enterkeyhint="send" spellcheck="false"></textarea>
+            </main>
+            <div id="preferences">
+                <h1>Preferences</h1>
+                <p>Reading preferences that affect the story.</p>
+                <details name="preferenceCategory">
+                    <summary><h2>View and Typography</h2></summary>
+                    <div class="controlRow">
+                        <fieldset>
+                            <legend>Zoom (delayed preview)</legend>
+                            <input id="prefsZoom" type="range" min="0.8" max="4" value="1.5" step="0.1">
+                            <input id="prefsZoomNum" type="number" min="0.8" max="4" value="1.5" step="0.1">
+                        </fieldset>
+                    </div>
+                    <div class="controlRow">
+                        <label for="prefsColumnWidth">Reading column width</label>
+                        <select name="prefsColumnWidth" id="prefsColumnWidth">
+                            <!-- Options are generated programmatically. -->
+                        </select>
+                    </div>
+                    <div class="controlRow">
+                        <label for="prefsLineHeight">Reading line height</label>
+                        <select name="prefsLineHeight" id="prefsLineHeight">
+                            <!-- Options are generated programmatically. -->
+                        </select>
+                    </div>
+                </details>
+                <details name="preferenceCategory">
+                    <summary><h2>Accessibility</h2></summary>
+                    <div class="controlRow">
+                        <label for="prefsDisabledControls">Use icons for disabled controls?</label>
+                        <input id="prefsDisabledControls" type="checkbox">
+                    </div>
+                </details>
+                <details name="preferenceCategory">
+                    <summary><h2>Themeing</h2></summary>
+                    <div class="controlRow">
+                        <label for="prefsTheme">Theme</label>
+                        <select name="theme" id="prefsTheme">
+                            <!-- Options are generated programmatically. -->
+                        </select>
+                    </div>
+                    <div class="controlRow">
+                        <fieldset>
+                            <legend>Contrast</legend>
+                            <input id="prefsFilterContrast" type="range" min="20" max="200" value="100">
+                            <input id="prefsFilterContrastNum" type="number" min="20" max="200" value="100">
+                        </fieldset>
+                    </div>
+                    <div class="controlRow">
+                        <fieldset>
+                            <legend>Brightness</legend>
+                            <input id="prefsFilterBrightness" type="range" min="30" max="200" value="100">
+                            <input id="prefsFilterBrightnessNum" type="number" min="30" max="200" value="100">
+                        </fieldset>
+                    </div>
+                    <div class="controlRow">
+                        <fieldset>
+                            <legend>Saturation</legend>
+                            <input id="prefsFilterSaturation" type="range" min="0" max="1000" value="100">
+                            <input id="prefsFilterSaturationNum" type="number" min="0" max="1000" value="100">
+                        </fieldset>
+                    </div>
+                    <div class="controlRow">
+                        <fieldset>
+                            <legend>Hue</legend>
+                            <input id="prefsFilterHue" type="range" min="0" max="360" value="0">
+                            <input id="prefsFilterHueNum" type="number" min="0" max="360" value="0">
+                        </fieldset>
+                    </div>
+                    <p>You may use the following <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/filter#syntax">filter CSS</a> to fine-tune.</p>
+                    <label for="prefsCustomFilter">Theme filter</label>
+                    <textarea id="prefsCustomFilter" spellcheck="false"></textarea>
+                </details>
+                <details name="preferenceCategory">
+                    <summary><h2>Code customization</h2></summary>
+                    <p>You can enter CSS (appearance logic) here to apply on theme refresh.</p>
+                    <label for="prefsCustomCSS">Custom CSS</label>
+                    <textarea id="prefsCustomCSS"spellcheck="false"></textarea>
+                    <p>You can enter Javascript (code logic) here to apply on page load. Errors are sent to console and it saves itself commented out, for stability.</p>
+                    <label for="prefsCustomJS">Custom Javascript</label>
+                    <textarea id="prefsCustomJS" spellcheck="false"></textarea>
+                </details>
+                <details name="preferenceCategory">
+                    <summary><h2>Miscellaneous</h2></summary>
+                    <div class="controlRow">
+                        <label for="prefsRunCode">Allow story code?</label>
+                        <input id="prefsRunCode" type="checkbox">
+                    </div>
+                </details>
+                <div class="controlRow">
+                    <button id="prefsDone">Apply</button>
+                    <button id="prefsUndo" disabled>Undo</button>
+                    <button id="prefsRestore" disabled>Restore all</button>
+                </div>
+            </div>
+        </div>
+    </body>
 </html>

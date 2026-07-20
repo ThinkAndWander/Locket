@@ -22,12 +22,36 @@
     <title>Locket</title>
 </head>
 <body>
-    <div>
-        <noscript>
-            <p>
-                You don't have Javascript enabled. This game needs Javascript to work, sorry!
-            </p>
-        </noscript>
+    <noscript>
+        <p>
+            You don't have Javascript enabled. This game needs Javascript to work, sorry!
+        </p>
+    </noscript>
+    <div id="bodyContainer">
+        <header id="headerBar">
+            <button>Settings</button>
+        </header>
+        <main id="mainColumn">
+            <section id="outputArea" aria-live="polite" />
+            <textarea id="inputArea" enterkeyhint="Submit" spellcheck="false" />
+        </main>
+        <div id="preferences">
+            <form>
+                <label for="prefsTheme">Theme:</label>
+                <select name="theme" id="prefsTheme">
+                  <!-- Options are generated programmatically. -->
+                  <!-- <option value="">Example</option> -->
+                </select>
+                <label for="prefsFont-size">Font size:</label>
+                <input id="prefs-font-size" type="range" min="0.6" max="6" value="1" />
+                <label for="prefs-run-code">Run page code</label>
+                <input id="prefs-run-code" type="checkbox" />
+                <div id="prefs-donecancel-container">
+                    <button id="prefs-done">Done</button>
+                    <button id="prefs-cancel">Cancel</button>
+                </div>
+            </form>
+        </div>
     </div>
 </body>
 </html>

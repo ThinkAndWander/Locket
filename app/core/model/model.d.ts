@@ -287,7 +287,7 @@ export type appOptions = {
      * warning more prominent and hides the associated text so that you need to manually show it. */
     blockedTriggers: reaction[]
 
-    /** The Locket engine can produce screen reader-specific text, and does so, in cases where it would improve the
+    /** We can produce screen reader-specific text, and does so, in cases where it would improve the
      * flow of speech. This usually beats what narration would produce today. See writing guidelines in WRITING.md. */
     disableTTSOptimization?: boolean
 }
@@ -472,5 +472,152 @@ export const enum triggerWarning {
 export type log = {
     text: string,
     type: 'warn' | 'err'
+}
+//#endregion
+
+//#region Theme
+type themeName = { name: string }
+/** Provides the basic colors and contrast of base themes. */
+export type theme = themeName & {
+    /** Color of buttons, like fork links. */
+    control: string
+
+    /** Color of interactive controls when disabled (defaults to non-disabled look). Note usually it's not provided
+     * because we prefer to use the 🛇 symbol for active accessibility. Current patterns are not good enough. */
+    controlDisabled?: string
+
+    /** Color of interactive control text when disabled. Usually not provided. */
+    controlDisabledText?: string
+
+    /** Color of interactive controls when focused. */
+    controlFocus: string
+
+    /** Color of interactive control text (defaults to the general text color). */
+    controlText?: string
+
+    /** Color of the reading column. */
+    column?: string
+
+    /** Color of the focus rectangle applied to elements for keyboard navigation. */
+    focusBorder: string
+
+    /** Color of the header at top. */
+    header: string
+
+    /** Color of the screen. */
+    page: string
+
+    /** Color of most text. */
+    text: string
+
+    /** Color of any link. */
+    link: string
+
+    /** Browsers might not respect styling of :visited, due to anti-tracking efforts. Defaults to link color. */
+    linkVisited?: string
+}
+
+/** Themes can be based on these, and themes based on these will mix in those ones. */
+export const enum themeBase {
+    Light,
+    Dark
+}
+
+/** Themes based on other themes it specify the one they're based on, and other properties are optional. */
+type themeBasedOn = Partial<theme> & themeName & {
+    /** The theme this is based on. It mixes in and properties can be overridden. */
+    base: themeBase,
+
+    /** Custom rules, starting with a selector. */
+    themeCSS?: string[]
+}
+
+type dynamicTheme = {
+    name: string,
+    get: () => Omit<theme | themeBasedOn, 'name'>
+}
+
+/** All available built-in themes. */
+export type allThemes = {
+    light: theme
+    lowContrastLight: theme
+    highContrastLight: theme
+    blackOnWhite: theme
+    dark: theme
+    lowContrastDark: theme
+    highContrastDark: theme
+    whiteOnBlack: theme
+    forcedColors: theme
+    ocean: theme
+    dandelion: theme
+    candle: themeBasedOn
+    midnight: themeBasedOn
+    matrix: themeBasedOn
+    sunrise: themeBasedOn
+    strawberry: themeBasedOn
+    magic: dynamicTheme
+}
+
+/** The settings a user would care about for display. */
+export type displayPreferences = {
+    /** Arbitrary, app-wide user-defined CSS. Recomputes on apply theme. */
+    customCSS?: string
+
+    /** Overrides the filter on the body tag, for fine control over themes. For tech-savvy users. */
+    customCSSFilter?: string
+
+    /** Arbitrary app-wide custom JS. Runs in a try-catch. On error, comments out and saves, then reloads. */
+    customJS?: string
+
+    /** A desired font family by name such as OpenDyslexic. */
+    fontFamily?: string
+
+    /** Column content scaling (default 1.5). */
+    zoom?: number
+
+    /** Line height (default 1rem) increases spacing. */
+    lineHeight?: string
+
+    /** Contrast from 20-200% (default 100%). Persists without effect if filter is defined. */
+    readFilterContrast?: number
+
+    /** Brightness from 30-200% (default 100%). Persists without effect if filter is defined. */
+    readFilterBrightness?: number
+
+    /** Saturation from 0-1000% (default 100%). Persists without effect if filter is defined. */
+    readFilterSaturate?: number
+
+    /** The hue from 0-360 degrees (default 0). 0=off, anything else does sepia(100%) + hue shift. Persists without
+     * effect if filter is defined. */
+    readFilterHue?: number
+
+    /** Opacity 0-100% (default 0%). The alpha of the overlay, before the body filter. */
+    overlayOpacity?: boolean
+
+    /** Color of the overlay (default black). */
+    overlayColor?: string
+
+    /** Usually about 50rem, which is a good mobile form factor + better for human vision than typical books. It helps
+     * reduce cognitive load, but can be set based on reader preferences. */
+    columnWidth?: string
+
+    /** Default on. Alt text of text is possible. This turns it off. */
+    screenReaderAlting?: boolean
+
+    /** Default off. Disabled controls show 🛇 instead of graying out. */
+    showDisabledStatus?: boolean
+
+    /** Whether to run JS and HTML from the story (default on). Reasoning is, it's essential for many stories and as
+     * good for trust as any website, especially given the global privacy abuse history of websites. */
+    executeCodeAndHtml?: boolean
+
+    /** Changes the background color of text segments on click. Helps with dyslexia. */
+    textHoverHighlight?: string
+
+    /** The font size of the first letter in a paragraph, in em units (1 = unchanged). Helps with dyslexia. */
+    paragraphStartingFontSize?: number
+
+    /** The color of the first letter in a paragraph. Helps with dyslexia. */
+    paragraphStartingColor?: string
 }
 //#endregion

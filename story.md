@@ -1,14 +1,36 @@
-@ Start
+@start
+Hello my firefly
+To your light I spring
+The joy of spontaneity
+Illumines the words I read
 
-Hello! It's a fun day
+The secret of your presence is a humbling mystery
+and the freedom of your gift,
+is opportunity
 
-**Hello**. [alt](hidden). I wonder...
+The path to walk differs by the year
+And it's full of life and humor
+change and cheer;
 
-made with [💕](love broke) and kidney beans
+baubles of pain
+and sadness and fear
 
-@ areallycool placewithnodownsides
+Be different
+Turn with it
+Follow those snaps of light!
+You are life's journey
+Find your sights so grand
 
-you are here now: `c.b = 4; return c.b`
-you are here now: `return ++c.b`
-you are here now: `return ++c.b`
-you are here now: `return ++c.b`
+Goodbye, firefly
+Now I wander to the next
+And I wonder
+And I smile
+When you are close at hand
+
+[Next](@fork2)
+
+
+@fork2
+Hello! It's a fun, [💕](lovely) day for kidney beans :)
+
+[Restart.](@start)

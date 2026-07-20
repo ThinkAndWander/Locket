@@ -1,4 +1,3 @@
-import "./style";
-import { init } from "./story/start";
+import { init } from "./story/start"
 
 init()

@@ -13,6 +13,8 @@ const _untrimmed_fork_name = /(?<=^@)\s*\w+(\w| )*/gum
 /** Fork descriptor: string start, 2 @ symbols, any whitespace, 1+ words and any remaining words, whitespace or commas. */
 const _untrimmed_fork_descriptor = /(?<=^@@)\s*\w+(\w| |,)*/gum
 
+const _startswith_tag = /^\s*<.+?>/u
+
 let _everInitParsing = false
 
 /** Extends the Marked.js engine to handle fork links, alted text, and code eval. Call once. */
@@ -33,25 +35,44 @@ export function initParsing(game: game) {
 
                 if (token.type === 'code' || token.type === 'codespan') {
                     try {
-                        let result = Function("game", "characters", "c", token.text)(game, characters, game.codecontext)
+                        // Valid Javascript can't start with a < character, and HTML must. So we just fork this into an
+                        // HTML token to render later. Very convenient! Works in-line but ```html is nice when editing.
+                        if (_startswith_tag.test(token.text)) {
+                            const tokenAs = token as marked.Tokens.HTML
+                            tokenAs.type = "html"
+                            tokenAs.text = token.text
+                            tokenAs.raw = token.text
+                            tokenAs.block = false
+                            tokenAs.pre = false
+                            return true
+                        }
 
-                        // Mutate the token to a Text token of the containing text without breaking refs.
+                        // Assume the code is Javascript and try to execute it.
+                        // Codespans use eval() for its expression-returning (for brevity) if an = sign isn't present
+                        // (not a die-hard metric that it's not just an expression, but almost always accurate). We use
+                        // eval *in* Function() because we'd have to create vars with those names otherwise, and
+                        // minification would break user expectations on top of that.
+                        let result = (token.type === 'codespan' && !(token.text as string).includes('='))
+                            ? Function("game", "characters", "c", `return eval(${token.text})`)(game, characters, game.codecontext)
+                            : Function("game", "characters", "c", token.text)(game, characters, game.codecontext)
+                        
                         if (typeof result === 'boolean' ||
                             typeof result === 'number' ||
                             typeof result === 'string')
                         {
+                            const tokenAs = token as marked.Tokens.Text
                             result = `${result}`
-                            token.type = "text"
-                            token.text = result
-                            ;(token as marked.Tokens.Text).raw = result
-                            ;(token as marked.Tokens.Text).escaped = false
+                            tokenAs.type = "text"
+                            tokenAs.text = result
+                            tokenAs.raw = result
+                            tokenAs.escaped = false
                             return true
                         }
                     } catch (err) {
                         game.log.push({ type: "warn", text: `In fork "${game.story.fork.name}", user code had an error: ${err}` })
                     }
 
-                    return false // discard code tokens that have no valid return value
+                    return false // discard code tokens with no valid return value
                 }
                 
                 return true // keep unrelated tokens
@@ -134,7 +155,7 @@ export function separateIntoForks(game: game, str: string): fork[] {
 
     matches.forEach((match, index) => {
         if (lastIndex !== 0) {
-            const content = str.substring(lastIndex, match.index - 1).trim()
+            const content = str.substring(lastIndex + matches[index - 1][0].length, match.index - 1).trim()
             if (content !== '') {
                 forks.push(processFork(game, lastForkName, content))
             } else {
@@ -142,7 +163,7 @@ export function separateIntoForks(game: game, str: string): fork[] {
             }
         }
 
-        const forkName = match[0].replaceAll(/\s*/gm, '').toLowerCase()
+        const forkName = match[0].trim().toLowerCase()
         lastIndex = match.index
 
         if (index === matches.length - 1) {
@@ -154,7 +175,7 @@ export function separateIntoForks(game: game, str: string): fork[] {
             }
         }
 
-        lastForkName = match[0].replaceAll(/\s*/gm, '').toLowerCase()
+        lastForkName = match[0].trim().toLowerCase()
     })
 
     // There is always one remaining fork.
@@ -337,14 +358,14 @@ export function jumpToFork(game: game, fork: fork) {
 
     // Inject placeholders
     const frontingList = getFronters(game.player.system)
-    fork.contentParsed = injectPronouns(frontingList.headmates[0], fork.contentRaw, frontingList.count === 1);
+    fork.contentParsed = injectPronouns(frontingList.headmates[0], fork.contentRaw, frontingList.count === 1)
 
     // Output to HTML. Executes user code, handles fork options and alted text as side effects.
     const html = marked.parse(fork.contentParsed ?? fork.contentRaw, { gfm: true, breaks: true }) as string
     const container = document.createElement('span')
     container.setHTMLUnsafe(html)
 
-    /** Uses data-forkname to attach a click event based on matching a known fork name. It's set lowercase and trimmed,
+    /** Uses data-fork to attach a click event based on matching a known fork name. It's set lowercase and trimmed,
      * so it's assumed to be so in comparison. */
     const attachForkLinkEvents = (node: ChildNode) => {
         node.childNodes.forEach(node => {
@@ -353,11 +374,11 @@ export function jumpToFork(game: game, fork: fork) {
 
         if (node.nodeType === node.ELEMENT_NODE && (node as HTMLElement).tagName === 'BUTTON') {
             const button = node as HTMLButtonElement
-            const forkNameIfAny = button.getAttribute('data-forkname')
+            const forkNameIfAny = button.getAttribute('data-fork')
             if (forkNameIfAny) {
                 button.addEventListener('click', () => {
                     game.story.forks.some(fork => {
-                        if (fork.name === forkNameIfAny) {
+                        if (fork.name.trim() === forkNameIfAny) {
                             jumpToFork(game, fork)
                             return true
                         }
@@ -380,7 +401,7 @@ function _createForkLink(link: forkLink): HTMLButtonElement {
     button.textContent = link.text
 
     // Track link name to hook click handler later, since Marked.js renders html from string and this will get lost.
-    button.setAttribute('data-forkname', link.name)
+    button.setAttribute('data-fork', link.name)
     return button
 }
 

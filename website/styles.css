@@ -1,13 +1,198 @@
-.forkOption {
-    padding: 1rem;
+/** Styling this file will affect most areas of the app, except for theme-specific CSS handled in theme.ts. */
+
+@font-face {
+    font-family: 'OpenDyslexic';
+    src: local('OpenDyslexic Regular'), url('./OpenDyslexic-Regular.otf'); /*URL to font*/
 }
 
-/** Screen reader only. The inverse is aria-hidden=true. Recommended by WebAIM. https://webaim.org/techniques/css/invisiblecontent/ */
-.sr-only {
-    position:absolute;
-    left:-10000px;
-    top:auto;
-    width:1px;
-    height:1px;
-    overflow:hidden;
+:root {
+    color-scheme: light dark; /** Tells the browser both are supported. */
+}
+
+/** Along with flex-grow on body, this makes the body fill all space. */
+html {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100% - 1px); /** Avoids a 1px rounding offset (Firefox) */
+}
+
+body {
+    flex-grow: 1;
+    display: flex; /** flex + justify-content centers the header and reading column. */
+    justify-content: center;
+    margin-bottom: 0;
+    margin-top: 0;
+}
+
+#bodyContainer {
+    display: flex;
+    flex-flow: column;
+}
+
+button {
+    border-color: transparent; /** To appear around the button without pushing layout. */
+    border-radius: 0.4rem;
+    border-width: 0.2rem;
+    margin: 0.25rem;
+    padding: 0.2rem;
+}
+
+button:not(:disabled) {
+    cursor: pointer;
+}
+
+button:disabled,
+select:disabled,
+input:disabled,
+textarea:disabled {
+    cursor: not-allowed;
+    border: none;
+    outline: none;
+}
+
+fieldset {
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+legend {
+    margin-bottom: 0.2rem;
+}
+
+input[type="checkbox"] {
+    appearance: none;
+    border: 0.1rem solid black;
+    text-align: center;
+    margin-left: 0; /** Checkbox labels are clickable so let's avoid weird gaps from browser-applied margins. */
+}
+
+input[type="checkbox"]:checked:after {
+    content: "✔";
+}
+
+
+select {
+    appearance: base-select; /** Limited support. If valid, lets us set the hovered option color. */
+}
+
+/** Markdown: keep buttons flush with paragraph left edge. */
+p > button {
+    margin-left: 0rem;
+}
+
+textarea {
+    display: block;
+    width: 100%;
+    max-width: 100%; /** Resize handle otherwise lets it explode past 100%. */
+    min-height: 4rem;
+}
+
+#mainColumn,
+#preferences {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+
+    /** Markdown: in-line adjacent buttons */
+    & button + button {
+        margin-left: 0.75rem;
+        margin-right: 0.75rem;
+    }
+    & button:has(+ button) {
+        margin-right: 0.75rem;
+    }
+
+    /** Markdown: buttons on separate lines */
+    & br + button {
+        margin-top: 1.5rem;
+    }
+
+    /** Visually hides content off-screen, intended for screen readers only. The inverse is aria-hidden=true.
+    Recommended by WebAIM. https://webaim.org/techniques/css/invisiblecontent/
+    Note: the focus rectangle created by some screen readers should be on the visible content instead, but it can't be
+    detected by any means (it's not part of, or hinted to the browser!) and so it can't be restored. */
+    & .sr-only {
+        position: absolute;
+        left: -10000px;
+        top: auto;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+    }
+}
+
+#outputArea {
+    align-self: center;
+    width: 100%;
+}
+
+/** preferences CSS */
+
+#preferences {
+    & button {
+        margin: 0.4rem;
+    }
+
+    & .controlRow {
+        margin-top: 0.75rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        /** We highlight controlRow for checkboxes to clarify the space between is clickable, since browsers do
+        this, but we don't want it to misinform the user where that interactive area extends, so shrink to fit. */
+        width: fit-content;
+    }
+
+    /** When controlRow is highlighted for checkboxes, use a pointer like any button. Because this is automatic,
+    browsers really should do it themselves. */
+    & .controlRow:has(> input[type="checkbox"]):hover,
+    & label:has(+ input[type="checkbox"]):hover,
+    & input[type="checkbox"]:hover {
+        cursor: pointer;
+    }
+    
+    & input {
+        vertical-align: center;
+    }
+
+    & input[type='checkbox'] {
+        line-height: 1rem; /** Avoids size jitter from the checkmark. */
+        height: 1.2rem;
+        width: 1.2rem;
+    }
+    
+    /** Checkbox labels are clickable so let's avoid weird gaps from browser-applied margins. */
+    & label:not(:has(+ input[type="checkbox"])) {
+        margin-right: 0.2rem;
+    }
+    & label:has(+ input[type="checkbox"]) {
+        margin-right: 0.2rem;
+    }
+
+    & h1 {
+        margin-bottom: 0;
+    }
+
+    & h2 {
+        margin: 0;
+        display: inline;
+        font-size: 1rem;
+    }
+    details[open] {
+        padding-bottom: 1rem;
+    }
+    summary {
+        cursor: pointer;
+        padding: 0.2rem;
+    }
+    #overlay { /** A way to tint any theme that also affects page gutters. */
+        background: transparent;
+        display: none;
+        height: 100%;
+        pointer-events: none;
+        position: absolute;
+        width: 100%;
+    }
 }
