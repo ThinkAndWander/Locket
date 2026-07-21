@@ -97,10 +97,10 @@ function _initPreferencesPage(): void {
 
     //#region Theme and custom filter
     const themeDropdown = document.getElementById('prefsTheme') as HTMLSelectElement
-    const defaultOption = document.createElement("option")
-        defaultOption.value = ''
-        defaultOption.text = 'Detect'
-        themeDropdown.appendChild(defaultOption)
+    const defaultThemeOption = document.createElement("option")
+        defaultThemeOption.value = ''
+        defaultThemeOption.text = 'Detect'
+        themeDropdown.appendChild(defaultThemeOption)
         themeDropdown.appendChild(document.createElement('hr'))
 
     const prefsCustomFilter = document.getElementById('prefsCustomFilter') as HTMLTextAreaElement
@@ -135,7 +135,62 @@ function _initPreferencesPage(): void {
     })
     //#endregion
 
-    //#region Sliders (theme and zoom)
+    //#region Theme tint color
+    const overlay = document.getElementById("overlay") as HTMLDivElement
+    const overlayColor = document.getElementById("prefsTint") as HTMLInputElement
+    overlayColor.value = loadedLocalStorage.display.overlayColor ?? "#000000"
+    overlayColor.addEventListener('input', () => {
+        overlay.style.backgroundColor = overlayColor.value ?? "#000000" // preview
+    })
+    overlayColor.addEventListener('change', () => {
+        loadedLocalStorage.display.overlayColor = overlayColor.value
+        saveToLocalStorage()
+        applyDisplayPreferences()
+    })
+    //#endregion
+
+    //#region Theme tint blend
+    const tintBlends = [
+        ['Color', 'color'],
+        ['Color Burn', 'color-burn'],
+        ['Color Dodge', 'color-dodge'],
+        ['Difference', 'difference'],
+        ['Exclusion', 'exclusion'],
+        ['Hard Light', 'hard-light'],
+        ['Hue', 'hue'],
+        ['Lighten', 'lighten'],
+        ['Luminosity', 'luminosity'],
+        ['Multiply', 'multiply'],
+        ['Overlay', 'overlay'],
+        ['Plus Lighter', 'plus-lighter'],
+        ['Saturation', 'saturation'],
+        ['Screen', 'screen'],
+        ['Soft Light', 'soft-light']]
+
+        const tintBlending = document.getElementById('prefsTintMethod') as HTMLSelectElement
+        const defaultBlendOption = document.createElement("option")
+        defaultBlendOption.value = 'normal'
+        defaultBlendOption.text = 'Normal'
+        tintBlending.appendChild(defaultBlendOption)
+        tintBlending.appendChild(document.createElement('hr'))
+        tintBlends.forEach(entry => {
+            const option = document.createElement("option")
+            option.text = entry[0]
+            option.value = entry[1]
+            if (loadedLocalStorage.display.overlayBlending === entry[1]) {
+                option.selected = true
+            }
+            tintBlending.appendChild(option)
+        })
+
+        tintBlending.addEventListener("change", () => {
+        loadedLocalStorage.display.overlayBlending = tintBlending.value
+        saveToLocalStorage()
+        applyDisplayPreferences()
+    })
+    //#endregion
+
+    //#region Sliders (theme, theme tint, and zoom)
     // Clamps to range because Narrator has a bug that lets you violate bounds.
     // The minimums for the CSS filters are set to keep the site usable for sighted users fidgeting with controls.
     const items = [
@@ -153,6 +208,9 @@ function _initPreferencesPage(): void {
         }],
         ['prefsFilterHue', `${loadedLocalStorage.display.readFilterHue ?? '0'}`, (newValue: number) => {
             loadedLocalStorage.display.readFilterHue = Math.min(Math.max(newValue ?? 0, 0), 360)
+        }],
+        ['prefsTintOpacity', `${loadedLocalStorage.display.overlayOpacity ?? '0'}`, (newValue: number) => {
+            loadedLocalStorage.display.overlayOpacity = Math.min(Math.max(newValue ?? 0, 0), 90)
         }]
     ] as const;
     items.forEach(entry => {
@@ -167,10 +225,13 @@ function _initPreferencesPage(): void {
             if (num.value !== `${newValue}`) { num.value = `${newValue}` }
             saveToLocalStorage()
 
-            // The CSS filter sliders support live update, but it's disabled for zoom because previewing that would
-            // move the buttons falling under the user's pointing device, and be visually jarring.
-            if (entry === items[1] || entry === items[2] || entry === items[3] || entry === items[4]) {
-                prefsCustomFilter.placeholder = resolveCSSFilter() // Show to make it easier to understand how to override it.
+            // Preview to ease understanding of how to override CSS filters. Don't read to screen readers.
+            if (items.slice(1, 5).some(item => entry === item)) {
+                prefsCustomFilter.placeholder = resolveCSSFilter()
+            }
+
+            // Preview except for zoom (it's visually jarring).
+            if (entry !== items[0]) {
                 applyDisplayPreferences()
             }
         }

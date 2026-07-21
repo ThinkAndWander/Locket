@@ -548,6 +548,8 @@ export type allThemes = {
     highContrastDark: theme
     whiteOnBlack: theme
     forcedColors: theme
+    simpleLight: theme
+    simpleDark: theme
     ocean: theme
     dandelion: theme
     candle: themeBasedOn
@@ -556,6 +558,7 @@ export type allThemes = {
     sunrise: themeBasedOn
     strawberry: themeBasedOn
     magic: dynamicTheme
+    unicorn: themeBasedOn
 }
 
 /** The settings a user would care about for display. */
@@ -592,10 +595,13 @@ export type displayPreferences = {
     readFilterHue?: number
 
     /** Opacity 0-100% (default 0%). The alpha of the overlay, before the body filter. */
-    overlayOpacity?: boolean
+    overlayOpacity?: number
 
-    /** Color of the overlay (default black). */
+    /** Color of the overlay (default black). This is a 6-digit hex color. Opacity converts to transparency. */
     overlayColor?: string
+
+    /** The mix-blend-mode of the overlay (default normal). This is any of the supported mixings. */
+    overlayBlending?: string
 
     /** Usually about 50rem, which is a good mobile form factor + better for human vision than typical books. It helps
      * reduce cognitive load, but can be set based on reader preferences. */

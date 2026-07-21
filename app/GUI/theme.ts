@@ -135,6 +135,31 @@ export const themes: allThemes = {
         link: "ActiveText",
         linkVisited: "VisitedText"
     },
+    simpleLight: {
+        name: "Simple Light",
+
+        page: "rgb(231, 231, 231)",
+        text: "rgb(40, 40, 40)",
+        control: "transparent",
+        controlFocus: "white",
+        focusBorder: "rgb(0, 179, 255)",
+        header: "transparent",
+        column: "transparent",
+        link: "rgb(10, 0, 205)",
+        linkVisited: "rgb(205, 0, 171)",
+    },
+    simpleDark: {
+        name: "Simple Dark",
+        page: "rgb(40, 40, 40)",
+        text: "rgb(231, 231, 231)",
+        control: "transparent",
+        controlFocus: "black",
+        focusBorder: "rgb(0, 179, 255)",
+        header: "transparent",
+        column: "transparent",
+        link: "rgb(151, 172, 255)",
+        linkVisited: "rgb(255, 151, 238)",
+    },
     ocean: {
         name: "Ocean",
         page: "rgb(34, 34, 102)",
@@ -261,6 +286,48 @@ export const themes: allThemes = {
             ]
         })
     },
+    unicorn: {
+        name: "Unicorn",
+        base: themeBase.Light,
+        control: "rgb(188, 230, 255)",
+        controlFocus: "rgb(240, 249, 255)",
+        controlText: "black",
+        focusBorder: "rgb(0, 220, 231)",
+        header: "linear-gradient(rgb(205, 228, 242) 0%, rgb(126, 191, 231) 98%, black)",
+        column: "white",
+        page: "linear-gradient(to bottom, aliceblue, rgb(255, 231, 231), rgb(255, 214, 184))",
+        themeCSS: [`
+            #headerBar button {
+                background: white;
+                border-radius: 1rem;
+            }
+            `,`
+            #headerBar button:hover,
+            #headerBar button:focus {
+                background: rgb(188, 230, 255);
+            }
+            `,`
+            #mainColumn button,
+            #preferences button {
+                border-radius: 1rem;
+                outline: 1px solid black;
+            }`,`
+            #headerBar {
+                border-radius: 4rem;
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            `,`
+            #outputArea {
+                background: linear-gradient(rgb(255, 0, 0), rgb(199, 129, 0), rgb(129, 129, 0), rgb(0, 163, 0), rgb(0, 0, 255), rgb(148, 0, 255), rgb(255, 0, 255));
+                background-clip: text;
+                color: rgba(0, 0, 0, 0.5);
+            }`,`
+            #mainColumn, #preferences {
+                background: transparent !important;
+            }`
+        ]
+    }
 }
 
 /** Returns a combined CSS filter from local storage preferences. */
@@ -335,6 +402,12 @@ export function applyTheme(givenTheme?: theme): void {
     // It's easy to forget semi-colons here and hard to debug, fair warning.
     const rules: string[] = [
         ...((css as themeBasedOn).themeCSS ? (css as themeBasedOn).themeCSS! : []),
+        `#overlay {
+                background: ${loadedLocalStorage.display.overlayColor};
+                display: ${loadedLocalStorage.display.overlayOpacity === 0 ? 'none' : ''};
+                opacity: ${loadedLocalStorage.display.overlayOpacity}%;
+                mix-blend-mode: ${loadedLocalStorage.display.overlayBlending ?? 'normal'}
+        }`,
         `body {
             background: ${css.page};
             color: ${css.text};
@@ -345,7 +418,7 @@ export function applyTheme(givenTheme?: theme): void {
                 color: ${css.link};
             }
             & a:visited {
-                color: ${css.linkVisited ?? css.link}
+                color: ${css.linkVisited ?? css.link};
             }
 
             & button,
@@ -383,7 +456,7 @@ export function applyTheme(givenTheme?: theme): void {
             }
 
             & select:checked {
-                background: ${css.controlFocus}
+                background: ${css.controlFocus};
             }
 
             & button:not(:disabled):focus,
@@ -434,7 +507,7 @@ export function applyTheme(givenTheme?: theme): void {
                 background: ${css.column};
             }` : '',
         `#headerBar {
-        background: ${css.header}
+            background: ${css.header};
         }`
     ]
     

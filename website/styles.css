@@ -1,12 +1,49 @@
 /** Styling this file will affect most areas of the app, except for theme-specific CSS handled in theme.ts. */
 
+/** Open Dyslexic is an excellent typeface for dyslexic readers, and because we focus on accessibility and it's under
+1MB in size, we bundle it and provide the automatic switching rules below. A local check is also made in case it can't
+load from file for any reason including being stripped out. */
 @font-face {
     font-family: 'OpenDyslexic';
-    src: local('OpenDyslexic Regular'), url('./OpenDyslexic-Regular.otf'); /*URL to font*/
+    src: local('OpenDyslexic Regular'), url('./OpenDyslexic-Regular.otf');
+}
+@font-face {
+    font-family: 'OpenDyslexic';
+    src: local('OpenDyslexic Bold'), url('./OpenDyslexic-Bold.otf');
+    font-weight: bold;
+}
+@font-face {
+    font-family: 'OpenDyslexic';
+    src: local('OpenDyslexic BoldItalic'), url('./OpenDyslexic-BoldItalic.otf');
+    font-style: italic;
+    font-weight: bold;
+}
+@font-face {
+    font-family: 'OpenDyslexic';
+    src: local('OpenDyslexic Italic'), url('./OpenDyslexic-Italic.otf');
+    font-style: italic;
+}
+
+/** Explicit typesetting of Arial, if found. ss01 adds serifs on I and l for visual distinction. Without this, it's not
+worthy of inclusion. */
+@font-face {
+    font-family: 'Arial';
+    src: local('Arial');
+    font-feature-settings: 'ss01' 1
 }
 
 :root {
     color-scheme: light dark; /** Tells the browser both are supported. */
+    /** About the fonts: Helvetica is considered slightly superior to Arial by most, and it's not default, so if you
+    have it, you probably mean to use it. Arial follows, because it is a very good font, and decreasingly ideal fonts.
+    There can only be one system font, and for that let's use sans-serif for higher accessibility. While OpenDyslexic,
+    dyslexie, and somewhat Comic Sans MS are useful for dyslexia, either they should be listed first or not at all,
+    since falling back to it would be a significantly different feel site-wide. Sans-serif is chosen as the system font
+    for highest accessible legibility. Note: fonts added here MUST distinctly render I1l apart such that they're
+    quickly distinguishable, else they infringe accessibility. Many fonts inanely have this problem, so check! When
+    adding fonts, ideally pick close-knit (not condensed, not thin/narrow) typefaces. We don't use variable fonts
+    due to shaky browser support for their features. */
+    --fallback-fonts: "Helvetica Neue", Helvetica, Arial, Verdana, sans-serif
 }
 
 /** Along with flex-grow on body, this makes the body fill all space. */
@@ -34,6 +71,7 @@ button {
     border-radius: 0.4rem;
     border-width: 0.2rem;
     margin: 0.25rem;
+    min-height: 1.5rem;
     padding: 0.2rem;
 }
 
@@ -70,9 +108,9 @@ input[type="checkbox"]:checked:after {
     content: "✔";
 }
 
-
 select {
     appearance: base-select; /** Limited support. If valid, lets us set the hovered option color. */
+    min-height: 1.4rem;
 }
 
 /** Markdown: keep buttons flush with paragraph left edge. */
@@ -123,12 +161,19 @@ textarea {
     }
 }
 
+/** A way to tint any theme that also affects page gutters. */
+#overlay {
+    height: 100%;
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+}
+
+/** The reading column and input box together. */
 #outputArea {
     align-self: center;
     width: 100%;
 }
-
-/** preferences CSS */
 
 #preferences {
     & button {
@@ -154,20 +199,27 @@ textarea {
     }
     
     & input {
-        vertical-align: center;
+        vertical-align: middle;
+        min-height: 1.2rem;
     }
-
     & input[type='checkbox'] {
-        line-height: 1rem; /** Avoids size jitter from the checkmark. */
         height: 1.2rem;
+        font-size: 0.8rem;
+        line-height: 1rem; /** Avoids size jitter from the checkmark. */
         width: 1.2rem;
+    }
+    & input[type='range'] {
+        min-width: 10rem;
+    }
+    & input[type='color'] {
+        width: 2rem;
     }
     
     /** Checkbox labels are clickable so let's avoid weird gaps from browser-applied margins. */
-    & label:not(:has(+ input[type="checkbox"])) {
+    & label:not(:has(+ input)) {
         margin-right: 0.2rem;
     }
-    & label:has(+ input[type="checkbox"]) {
+    & label:has(+ input) {
         margin-right: 0.2rem;
     }
 
@@ -186,13 +238,5 @@ textarea {
     summary {
         cursor: pointer;
         padding: 0.2rem;
-    }
-    #overlay { /** A way to tint any theme that also affects page gutters. */
-        background: transparent;
-        display: none;
-        height: 100%;
-        pointer-events: none;
-        position: absolute;
-        width: 100%;
     }
 }
