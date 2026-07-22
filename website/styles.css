@@ -1,6 +1,6 @@
-/** Styling this file will affect most areas of the app, except for theme-specific CSS handled in theme.ts. */
+/* Styling this file will affect most areas of the app, except for theme-specific CSS handled in theme.ts. */
 
-/** Open Dyslexic is an excellent typeface for dyslexic readers, and because we focus on accessibility and it's under
+/* Open Dyslexic is an excellent typeface for dyslexic readers, and because we focus on accessibility and it's under
 1MB in size, we bundle it and provide the automatic switching rules below. A local check is also made in case it can't
 load from file for any reason including being stripped out. */
 @font-face {
@@ -24,7 +24,7 @@ load from file for any reason including being stripped out. */
     font-style: italic;
 }
 
-/** Explicit typesetting of Arial, if found. ss01 adds serifs on I and l for visual distinction. Without this, it's not
+/* Explicit typesetting of Arial, if found. ss01 adds serifs on I and l for visual distinction. Without this, it's not
 worthy of inclusion. */
 @font-face {
     font-family: 'Arial';
@@ -33,8 +33,8 @@ worthy of inclusion. */
 }
 
 :root {
-    color-scheme: light dark; /** Tells the browser both are supported. */
-    /** About the fonts: Helvetica is considered slightly superior to Arial by most, and it's not default, so if you
+    color-scheme: light dark; /* Tells the browser both are supported. */
+    /* About the fonts: Helvetica is considered slightly superior to Arial by most, and it's not default, so if you
     have it, you probably mean to use it. Arial follows, because it is a very good font, and decreasingly ideal fonts.
     There can only be one system font, and for that let's use sans-serif for higher accessibility. While OpenDyslexic,
     dyslexie, and somewhat Comic Sans MS are useful for dyslexia, either they should be listed first or not at all,
@@ -46,16 +46,16 @@ worthy of inclusion. */
     --fallback-fonts: "Helvetica Neue", Helvetica, Arial, Verdana, sans-serif
 }
 
-/** Along with flex-grow on body, this makes the body fill all space. */
+/* Along with flex-grow on body, this makes the body fill all space. */
 html {
     display: flex;
     flex-direction: column;
-    min-height: calc(100% - 1px); /** Avoids a 1px rounding offset (Firefox) */
+    min-height: calc(100% - 1px); /* Avoids a 1px rounding offset (Firefox) */
 }
 
 body {
     flex-grow: 1;
-    display: flex; /** flex + justify-content centers the header and reading column. */
+    display: flex; /* flex + justify-content centers the header and reading column. */
     justify-content: center;
     margin-bottom: 0;
     margin-top: 0;
@@ -67,7 +67,7 @@ body {
 }
 
 button {
-    border-color: transparent; /** To appear around the button without pushing layout. */
+    border-color: transparent; /* To appear around the button without pushing layout. */
     border-radius: 0.4rem;
     border-width: 0.2rem;
     margin: 0.25rem;
@@ -88,6 +88,12 @@ textarea:disabled {
     outline: none;
 }
 
+button,
+select,
+input[type="number"] {
+    font-size: 1rem; /* Firefox (Linux) needs this */
+}
+
 fieldset {
     border: none;
     margin: 0;
@@ -101,7 +107,7 @@ input[type="checkbox"] {
     appearance: none;
     border: 0.1rem solid black;
     text-align: center;
-    margin-left: 0; /** Checkbox labels are clickable so let's avoid weird gaps from browser-applied margins. */
+    margin-left: 0; /* Checkbox labels are clickable so let's avoid weird gaps from browser-applied margins. */
 }
 
 input[type="checkbox"]:checked:after {
@@ -109,11 +115,11 @@ input[type="checkbox"]:checked:after {
 }
 
 select {
-    appearance: base-select; /** Limited support. If valid, lets us set the hovered option color. */
+    appearance: base-select; /* Limited support. If valid, lets us set the hovered option color. */
     min-height: 1.4rem;
 }
 
-/** Markdown: keep buttons flush with paragraph left edge. */
+/* Markdown: keep buttons flush with paragraph left edge. */
 p > button {
     margin-left: 0rem;
 }
@@ -121,7 +127,7 @@ p > button {
 textarea {
     display: block;
     width: 100%;
-    max-width: 100%; /** Resize handle otherwise lets it explode past 100%. */
+    max-width: 100%; /* Resize handle otherwise lets it explode past 100%. */
     min-height: 4rem;
 }
 
@@ -133,7 +139,7 @@ textarea {
     padding-left: 2rem;
     padding-right: 2rem;
 
-    /** Markdown: in-line adjacent buttons */
+    /* Markdown: in-line adjacent buttons */
     & button + button {
         margin-left: 0.75rem;
         margin-right: 0.75rem;
@@ -142,12 +148,12 @@ textarea {
         margin-right: 0.75rem;
     }
 
-    /** Markdown: buttons on separate lines */
+    /* Markdown: buttons on separate lines */
     & br + button {
         margin-top: 1.5rem;
     }
 
-    /** Visually hides content off-screen, intended for screen readers only. The inverse is aria-hidden=true.
+    /* Visually hides content off-screen, intended for screen readers only. The inverse is aria-hidden=true.
     Recommended by WebAIM. https://webaim.org/techniques/css/invisiblecontent/
     Note: the focus rectangle created by some screen readers should be on the visible content instead, but it can't be
     detected by any means (it's not part of, or hinted to the browser!) and so it can't be restored. */
@@ -161,7 +167,7 @@ textarea {
     }
 }
 
-/** A way to tint any theme that also affects page gutters. */
+/* A way to tint any theme that also affects page gutters. */
 #overlay {
     height: 100%;
     pointer-events: none;
@@ -169,7 +175,7 @@ textarea {
     width: 100%;
 }
 
-/** The reading column and input box together. */
+/* The reading column and input box together. */
 #outputArea {
     align-self: center;
     width: 100%;
@@ -185,12 +191,12 @@ textarea {
         margin-bottom: 0.75rem;
         display: flex;
         align-items: center;
-        /** We highlight controlRow for checkboxes to clarify the space between is clickable, since browsers do
+        /* We highlight controlRow for checkboxes to clarify the space between is clickable, since browsers do
         this, but we don't want it to misinform the user where that interactive area extends, so shrink to fit. */
         width: fit-content;
     }
 
-    /** When controlRow is highlighted for checkboxes, use a pointer like any button. Because this is automatic,
+    /* When controlRow is highlighted for checkboxes, use a pointer like any button. Because this is automatic,
     browsers really should do it themselves. */
     & .controlRow:has(> input[type="checkbox"]):hover,
     & label:has(+ input[type="checkbox"]):hover,
@@ -205,7 +211,7 @@ textarea {
     & input[type='checkbox'] {
         height: 1.2rem;
         font-size: 0.8rem;
-        line-height: 1rem; /** Avoids size jitter from the checkmark. */
+        line-height: 1rem; /* Avoids size jitter from the checkmark. */
         width: 1.2rem;
     }
     & input[type='range'] {
@@ -215,7 +221,7 @@ textarea {
         width: 2rem;
     }
     
-    /** Checkbox labels are clickable so let's avoid weird gaps from browser-applied margins. */
+    /* Checkbox labels are clickable so let's avoid weird gaps from browser-applied margins. */
     & label:not(:has(+ input)) {
         margin-right: 0.2rem;
     }

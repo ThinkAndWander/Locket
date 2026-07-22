@@ -346,8 +346,6 @@ export function resolveCSSFilter(): string {
         if (loadedLocalStorage.display.readFilterBrightness !== undefined) {
             readingFilter += `brightness(${loadedLocalStorage.display.readFilterBrightness}%) `
         }
-
-        if (readingFilter === '') { readingFilter = 'none' }
     }
 
     return readingFilter
@@ -405,7 +403,7 @@ export function applyTheme(givenTheme?: theme): void {
         `#overlay {
                 background: ${loadedLocalStorage.display.overlayColor};
                 display: ${loadedLocalStorage.display.overlayOpacity === 0 ? 'none' : ''};
-                opacity: ${loadedLocalStorage.display.overlayOpacity}%;
+                opacity: ${loadedLocalStorage.display.overlayOpacity ?? 0}%;
                 mix-blend-mode: ${loadedLocalStorage.display.overlayBlending ?? 'normal'}
         }`,
         `body {
@@ -500,6 +498,7 @@ export function applyTheme(givenTheme?: theme): void {
         loadedLocalStorage.display.showDisabledStatus ? `
             button:disabled:after {
             content: " 🛇";
+            line-height: 1rem;`/* Firefox (Linux) needs this */+`
             }` : '',
         css.column ? `
             #mainColumn,
