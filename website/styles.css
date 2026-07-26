@@ -1,49 +1,93 @@
-/* Styling this file will affect most areas of the app, except for theme-specific CSS handled in theme.ts. */
+/* Static themeing goes here. Dynamic themeing rules go in theme.ts. */
 
-/* Open Dyslexic is an excellent typeface for dyslexic readers, and because we focus on accessibility and it's under
-1MB in size, we bundle it and provide the automatic switching rules below. A local check is also made in case it can't
-load from file for any reason including being stripped out. */
+@font-face {
+    font-family: 'Roboto';
+    src: url('./fonts/Roboto-Regular.ttf'), local('Roboto Condensed'), local('Roboto');
+}
+@font-face {
+    font-family: 'Roboto';
+    src: url('./fonts/Roboto-Italic.ttf'), local('Roboto Condensed'), local('Roboto');
+    font-style: italic;
+}
+
+/* The default. A pleasing Arial-like font that acts as a unified, body text serif with distinct I1l rendering. */
+@font-face {
+    font-family: 'STIX Two';
+    src: local('STIX Two'), url('./fonts/STIXTwo-Regular.ttf');
+}
+@font-face {
+    font-family: 'STIX Two';
+    src: local('STIX Two'), url('./fonts/STIXTwo-Italic.ttf');
+    font-style: italic;
+}
+
+/* The leading free dyslexic font. Bundled for guaranteed availability. Not a fallback; it can annoy some users. */
 @font-face {
     font-family: 'OpenDyslexic';
-    src: local('OpenDyslexic Regular'), url('./OpenDyslexic-Regular.otf');
+    src: url('./fonts/OpenDyslexic-Regular.otf'), local('OpenDyslexic Regular');
 }
 @font-face {
     font-family: 'OpenDyslexic';
-    src: local('OpenDyslexic Bold'), url('./OpenDyslexic-Bold.otf');
+    src: url('./fonts/OpenDyslexic-Bold.otf'), local('OpenDyslexic Bold');
     font-weight: bold;
 }
 @font-face {
     font-family: 'OpenDyslexic';
-    src: local('OpenDyslexic BoldItalic'), url('./OpenDyslexic-BoldItalic.otf');
-    font-style: italic;
+    src: url('./fonts/OpenDyslexic-BoldItalic.otf'), local('OpenDyslexic BoldItalic');
     font-weight: bold;
+    font-style: italic;
 }
 @font-face {
     font-family: 'OpenDyslexic';
-    src: local('OpenDyslexic Italic'), url('./OpenDyslexic-Italic.otf');
+    src: url('./fonts/OpenDyslexic-Italic.otf'), local('OpenDyslexic Italic');
     font-style: italic;
 }
 
-/* Explicit typesetting of Arial, if found. ss01 adds serifs on I and l for visual distinction. Without this, it's not
-worthy of inclusion. */
+/* A popular alternative with support for most glyphs, and fallbacked for that reason. */
+@font-face {
+    font-family: 'Noto Serif';
+    src: local('Noto Serif'), url('./fonts/NotoSerif-Regular.ttf');
+}
+@font-face {
+    font-family: 'Noto Serif';
+    src: local('Noto Serif'), url('./fonts/NotoSerif-Italic.ttf');
+    font-style: italic;
+}
+
+/* Comfortaa is bundled as an alternative that's popular among users. */
+@font-face {
+    font-family: 'Comfortaa';
+    src: local('Comfortaa'), url('./fonts/Comfortaa.ttf');
+}
+
+/* Arial (not bundled) is set up to render Il with serifs so 1Il are all visually distinct, for accessibility. */
 @font-face {
     font-family: 'Arial';
     src: local('Arial');
-    font-feature-settings: 'ss01' 1
+    font-feature-settings: 'ss01' 1;
+}
+@font-face {
+    font-family: 'Arial';
+    src: local('Arial Bold');
+    font-feature-settings: 'ss01' 1;
+    font-weight: bold;
+}
+@font-face {
+    font-family: 'Arial';
+    src: local('Arial Italic');
+    font-feature-settings: 'ss01' 1;
+    font-style: italic;
+}
+@font-face {
+    font-family: 'Arial';
+    src: local('Arial Bold Italic');
+    font-feature-settings: 'ss01' 1;
+    font-weight: bold;
+    font-style: italic;
 }
 
 :root {
-    color-scheme: light dark; /* Tells the browser both are supported. */
-    /* About the fonts: Helvetica is considered slightly superior to Arial by most, and it's not default, so if you
-    have it, you probably mean to use it. Arial follows, because it is a very good font, and decreasingly ideal fonts.
-    There can only be one system font, and for that let's use sans-serif for higher accessibility. While OpenDyslexic,
-    dyslexie, and somewhat Comic Sans MS are useful for dyslexia, either they should be listed first or not at all,
-    since falling back to it would be a significantly different feel site-wide. Sans-serif is chosen as the system font
-    for highest accessible legibility. Note: fonts added here MUST distinctly render I1l apart such that they're
-    quickly distinguishable, else they infringe accessibility. Many fonts inanely have this problem, so check! When
-    adding fonts, ideally pick close-knit (not condensed, not thin/narrow) typefaces. We don't use variable fonts
-    due to shaky browser support for their features. */
-    --fallback-fonts: "Helvetica Neue", Helvetica, Arial, Verdana, sans-serif
+    --fallback-fonts: "STIX Two", "Noto Serif", serif
 }
 
 /* Along with flex-grow on body, this makes the body fill all space. */
@@ -55,15 +99,17 @@ html {
 
 body {
     flex-grow: 1;
+    font-family: var(--fallback-fonts); /* These are safe for GUI too, unlike the chosen reading font. */
     display: flex; /* flex + justify-content centers the header and reading column. */
     justify-content: center;
     margin-bottom: 0;
     margin-top: 0;
 }
 
-#bodyContainer {
+#page {
     display: flex;
     flex-flow: column;
+    position: relative; /** Allows overlay to be absolutely positioned and expand with it. */
 }
 
 button {
@@ -167,12 +213,20 @@ textarea {
     }
 }
 
+#leftGutter,
+#rightGutter {
+    flex-grow: 1;
+    pointer-events: none;
+    z-index: 1; /* Required to affect disabled controls. Tested, needed & true in Firefox, Chromium. */
+}
+
 /* A way to tint any theme that also affects page gutters. */
 #overlay {
     height: 100%;
     pointer-events: none;
     position: absolute;
     width: 100%;
+    z-index: 1; /* Required to affect disabled controls. Tested, needed & true in Firefox, Chromium. */
 }
 
 /* The reading column and input box together. */
@@ -182,6 +236,8 @@ textarea {
 }
 
 #preferences {
+    font-family: var(--fallback-fonts); /* Don't use the reading font. */
+
     & button {
         margin: 0.4rem;
     }
@@ -232,17 +288,49 @@ textarea {
     & h1 {
         margin-bottom: 0;
     }
-
     & h2 {
         margin: 0;
         display: inline;
         font-size: 1rem;
     }
-    details[open] {
+    & details[open] {
         padding-bottom: 1rem;
     }
-    summary {
+    & summary {
         cursor: pointer;
         padding: 0.2rem;
     }
+
+    & .suggestableInputTray {
+        position: absolute;
+    }
+    & .suggestableInputEntry {
+        border-radius: 0;
+        width: 100%;
+        padding: 0 0 0 0.1rem;
+        margin: 0;
+        text-align: left;
+    }
+    /** This crazy line hides the tray results if nothing in the tray has focus, nor the textbox. It avoids some
+    slow javascript workarounds since onfocusout is *also* not browser-stable, but this is. Nifty! */
+    .suggestableInputContainer:not(:focus-within):not(:has(input[type='text']:focus)) .suggestableInputTray {
+        display: none;
+    }
+}
+
+/* Automatically decorate external links to mark them as such. An intentional visual-only enhancement. Don't worry,
+since screen readers say the link first, it will still be clear for them. This is only a nice-to-have. */
+a[href]:not(:where(
+  [href^="#"], /* exclude hash only links */
+  [href^="javascript:" i], /* exclude javascript only links */
+  [href^="/"]:not([href^="//"]), /* exclude relative but not double slash only links */
+  [href*="//stackoverflow.com"], /* domains to exclude */
+  [href*="//meta.stackoverflow.com"], /* subdomains to exclude */
+)):after {
+    content: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 31.55 31.49'%3E%3Cdefs%3E%3CclipPath id='a'%3E%3Cpath d='M0 0h32v32H0z'/%3E%3C/clipPath%3E%3C/defs%3E%3Cg fill='none' stroke='%23000' stroke-width='3' clip-path='url(%23a)' transform='translate(-.2 -.2)'%3E%3Cpath d='M21.7 1.7h8.56m0-1.5v9.94m0-8.44L14.52 17.46M13.99 2.7H.2m29.06 27.5V17.98m1.5 12.22H.21m1.5.07V1.7'/%3E%3C/g%3E%3C/svg%3E");
+    display: inline-block;
+    height: 0.6rem;
+    width: 0.6rem;
+    padding-left: 0.2rem;
+    vertical-align: super;
 }

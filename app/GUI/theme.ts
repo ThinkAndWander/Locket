@@ -1,5 +1,6 @@
 import { allThemes, dynamicTheme, theme, themeBase, themeBasedOn } from "../core/model/model"
 import { loadedLocalStorage, saveToLocalStorage } from "../core/persistence"
+import { bundleFontList } from "./consts"
 
 let everInitTheme = false
 let _themeStyles: HTMLStyleElement | undefined // Reference held to a dynamic stylesheet.
@@ -334,16 +335,20 @@ export const themes: allThemes = {
 export function resolveCSSFilter(): string {
     let readingFilter = loadedLocalStorage.display.customCSSFilter ?? ''
     if (readingFilter === '') {
-        if (loadedLocalStorage.display.readFilterHue) { // allow value 0 to omit this entirely.
+        if (loadedLocalStorage.display.readFilterHue &&
+            loadedLocalStorage.display.readFilterHue !== 0) { // allow value 0 to omit this entirely.
             readingFilter = `sepia(100%) hue-rotate(${loadedLocalStorage.display.readFilterHue}deg) `
         }
-        if (loadedLocalStorage.display.readFilterContrast !== undefined) {
+        if (loadedLocalStorage.display.readFilterContrast !== undefined &&
+            loadedLocalStorage.display.readFilterContrast !== 100) {
             readingFilter += `contrast(${loadedLocalStorage.display.readFilterContrast}%) `
         }
-        if (loadedLocalStorage.display.readFilterSaturate !== undefined) {
+        if (loadedLocalStorage.display.readFilterSaturate !== undefined &&
+            loadedLocalStorage.display.readFilterSaturate !== 100) {
             readingFilter += `saturate(${loadedLocalStorage.display.readFilterSaturate}%) `
         }
-        if (loadedLocalStorage.display.readFilterBrightness !== undefined) {
+        if (loadedLocalStorage.display.readFilterBrightness !== undefined &&
+            loadedLocalStorage.display.readFilterBrightness !== 100) {
             readingFilter += `brightness(${loadedLocalStorage.display.readFilterBrightness}%) `
         }
     }
@@ -397,20 +402,42 @@ export function applyTheme(givenTheme?: theme): void {
     const loContrast = window.matchMedia("(prefers-contrast: less)").matches
     let css = givenTheme ?? resolveTheme(hiContrast, loContrast)
 
+    // Resolves saved font name as a bundled font name, even space-free, or total write-in. Found entries have a 2nd
+    // entry for optional style overrides.
+    let resolvedFontData = [loadedLocalStorage.display.font ?? '', '']
+    const current = resolvedFontData[0].replaceAll(' ', '').toLowerCase()
+    const index = bundleFontList.findIndex(entry => current === entry[0].replaceAll(' ', '').toLowerCase())
+    if (index !== -1) {
+        // Append | to ensure at LEAST 2 entries in array, then limit to 2 so it's always 2.
+        resolvedFontData = `${bundleFontList[index][1]}|`.split('|', 2)
+    }
+
     // It's easy to forget semi-colons here and hard to debug, fair warning.
     const rules: string[] = [
         ...((css as themeBasedOn).themeCSS ? (css as themeBasedOn).themeCSS! : []),
-        `#overlay {
-                background: ${loadedLocalStorage.display.overlayColor};
-                display: ${loadedLocalStorage.display.overlayOpacity === 0 ? 'none' : ''};
-                opacity: ${loadedLocalStorage.display.overlayOpacity ?? 0}%;
-                mix-blend-mode: ${loadedLocalStorage.display.overlayBlending ?? 'normal'}
-        }`,
-        `body {
+        `#overlay,
+        #leftGutter,
+        #rightGutter {
+            background: ${loadedLocalStorage.display.overlayColor};
+            display: ${loadedLocalStorage.display.overlayOpacity === 0 ? 'none' : ''};
+            opacity: ${loadedLocalStorage.display.overlayOpacity ?? 0}%;
+            mix-blend-mode: ${loadedLocalStorage.display.overlayBlending ?? 'normal'}
+        }`,`
+        #page,
+        #leftGutter,
+        #rightGutter {
+            filter: ${resolveCSSFilter()};
+        }`,`
+        #mainColumn {
+            font-family:${loadedLocalStorage.display.font !== undefined
+                ? resolvedFontData[0] + ', '
+                : ''}var(--fallback-fonts);
+            ${resolvedFontData[1]}
+        }
+        `, `
+        body {
             background: ${css.page};
             color: ${css.text};
-            font-family: ${loadedLocalStorage.display.fontFamily !== undefined ? loadedLocalStorage.display.fontFamily + ', ' : ''}Arial, Helvetica, Verdana, Open Sans, sans-serif;
-            filter: ${resolveCSSFilter()};
 
             & a:any-link {
                 color: ${css.link};
@@ -421,13 +448,14 @@ export function applyTheme(givenTheme?: theme): void {
 
             & button,
             & select,
-            & input,
+            & input:not([type="text"]),
             & summary {
                 background: ${css.control};
                 color: ${css.controlText ?? css.text};
             }
 
-            & textarea {
+            & textarea,
+            & input[type="text"] {
                 color: ${css.text};
                 background: ${css.column ?? css.page};
             }
@@ -448,7 +476,7 @@ export function applyTheme(givenTheme?: theme): void {
 
             & button:not(:disabled):hover,
             & select:not(:disabled):hover,
-            & input:not(:disabled):hover,
+            & input:not(:disabled):not([type="text"]):hover,
             & details:not(:disabled) summary:hover {
                 background: ${css.controlFocus};
             }
@@ -459,8 +487,9 @@ export function applyTheme(givenTheme?: theme): void {
 
             & button:not(:disabled):focus,
             & select:not(:disabled):focus,
-            & input:not(:disabled):focus,
-            & details:not(:disabled) summary:focus {
+            & input:not(:disabled):not([type="text"]):focus,
+            & details:not(:disabled) summary:focus,
+            .suggestableInputTray:focus-within {
                 background: ${css.controlFocus};
             }
 
@@ -468,9 +497,9 @@ export function applyTheme(givenTheme?: theme): void {
             & select:not(:disabled):focus,
             & input:not(:disabled):focus,
             & textarea:not(:disabled):focus,
-            & details:not(:disabled):focus {
+            & details:not(:disabled):focus,
+            .suggestableInputTray:focus-within {
                 border-color: ${css.focusBorder};
-                ${hiContrast ? 'border-width: 0.5rem;' : '' /** better visibility */}
             }
 
             input[type="checkbox"] {
@@ -488,6 +517,10 @@ export function applyTheme(givenTheme?: theme): void {
             }
             & summary::marker {
                 color: ${css.controlText};
+            }
+            & .suggestableInputTray {
+                background-color: ${css.column ?? css.page};
+                border: 1px solid ${css.controlText ?? css.text};
             }
         }`,
         `#headerBar,

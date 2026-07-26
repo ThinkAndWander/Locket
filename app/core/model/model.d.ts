@@ -288,7 +288,7 @@ export type appOptions = {
     blockedTriggers: reaction[]
 
     /** We can produce screen reader-specific text, and does so, in cases where it would improve the
-     * flow of speech. This usually beats what narration would produce today. See writing guidelines in WRITING.md. */
+     * flow of speech. This usually beats what narration would produce today. See writing guidelines in guide/Writing.md. */
     disableTTSOptimization?: boolean
 }
 
@@ -390,7 +390,7 @@ export const enum timeUnit {
 //#endregion
 
 //#region story state and utilities
-/** A top-level token, sorted before anything else in the story text. See WRITING.md. */
+/** A top-level token, sorted before anything else in the story text. See guide/Writing.md. */
 export type fork = {
     /** A unique, lowercased and trimmed fork name of \w word characters. */
     name: string,
@@ -401,18 +401,18 @@ export type fork = {
     /** Fork contents after placeholder injection. */
     contentParsed?: string,
 
-    /** Additional, case-sensitive info associated to the fork. See WRITING.md. */
+    /** Additional, case-sensitive info associated to the fork. See guide/Writing.md. */
     descriptors: forkDescriptors[]
 }
 
-/** The possible names of fork descriptors. Trimmed lowercase. See WRITING.md. */
+/** The possible names of fork descriptors. Trimmed lowercase. See guide/Writing.md. */
 export const enum forkDescriptorName {
     People = 'people',
     Time = 'time',
     Trigger = 'trigger',
 }
 
-/** The definitions of fork descriptors. Trimmed lowercase. See WRITING.md. */
+/** The definitions of fork descriptors. Trimmed lowercase. See guide/Writing.md. */
 export type forkDescriptors = 
     { name: forkDescriptorName.People, character: character, headmate?: headmate } |
     { name: forkDescriptorName.Time, amount: number, unit: 'minutes' | 'hours' } |
@@ -430,14 +430,14 @@ export type forkLink = {
     descriptors: linkDescriptors[],
 }
 
-/** The possible names of fork link descriptors. See WRITING.md. */
+/** The possible names of fork link descriptors. See guide/Writing.md. */
 export const enum linkDescriptorName {
     Social = 'social',
     Physical = 'physical',
     Mental = 'mental'
 }
 
-/** The definitions of fork link descriptors. See WRITING.md. */
+/** The definitions of fork link descriptors. See guide/Writing.md. */
 export type linkDescriptors =
     { name: linkDescriptorName.Social, amount: number } |
     { name: linkDescriptorName.Physical, amount: number } |
@@ -572,14 +572,24 @@ export type displayPreferences = {
     /** Arbitrary app-wide custom JS. Runs in a try-catch. On error, comments out and saves, then reloads. */
     customJS?: string
 
-    /** A desired font family by name such as OpenDyslexic. */
-    fontFamily?: string
+    /** The reading font family. It first resolves to a known bundled font name, since some apply additional styles,
+     * and then if it doesn't match, it's treated as verbatim which may load dependent on the user having the font. */
+    font?: string
 
     /** Column content scaling (default 1.5). */
     zoom?: number
 
     /** Line height (default 1rem) increases spacing. */
     lineHeight?: string
+
+    /** Margin between paragraphs (default 1rem) increases spacing. */
+    paragraphMargin?: string
+
+    /** Additional or negative spacing between each letter (default 0). */
+    letterSpacing?: string
+
+    /** Additional or negative spacing between words (default 0). */
+    wordSpacing?: string
 
     /** Contrast from 20-200% (default 100%). Persists without effect if filter is defined. */
     readFilterContrast?: number

@@ -1,5 +1,7 @@
 import { allThemes } from "../core/model/model"
 import { loadedLocalStorage, saveToLocalStorage } from "../core/persistence"
+import { bundleFontList, columnWidths, knownFontNames, letterSpacings, lineSpacings, paragraphMargins, tintBlends, wordSpacings } from "./consts"
+import { SuggestedInput } from "./SuggestedInput"
 import { applyTheme, resolveCSSFilter, themes } from "./theme"
 
 let _out: HTMLElement // Output region.
@@ -45,12 +47,6 @@ function _initHeaderBar(): void {
 /** Sets up the preferences page. */
 function _initPreferencesPage(): void {
     //#region Reading column width
-    const columnWidths = [
-        ['Narrow', '30vw'],
-        ['Default', '50vw'],
-        ['Wide', '70vw'],
-        ['Full size', '100vw']]
-
     const columnWidth = document.getElementById('prefsColumnWidth') as HTMLSelectElement
     columnWidths.forEach(entry => {
         const option = document.createElement("option")
@@ -69,14 +65,71 @@ function _initPreferencesPage(): void {
     })
     //#endregion
 
-    //#region Line spacing
-    const lineSpacings = [
-        ['Dense', '1rem'],
-        ['Default', '1.2rem'],
-        ['More', '1.5rem'],
-        ['Double', '2rem'],
-        ['Spacious', '3rem']]
+    //#region Font
+    const bundledFonts = document.getElementById('prefsIncludedFonts') as HTMLSelectElement
+    const writeInFont = new SuggestedInput<never>(loadedLocalStorage.display.font, knownFontNames.map(name => ({ name })))
+    writeInFont.searchbox.id = "prefsWriteInFont"
+    writeInFont.searchbox.placeholder = "Name a font"
 
+    const defaultFontOption = document.createElement("option")
+        defaultFontOption.value = ''
+        defaultFontOption.text = 'Default'
+        bundledFonts.appendChild(defaultFontOption)
+        bundledFonts.appendChild(document.createElement('hr'))
+
+    if (!loadedLocalStorage.display.font) {
+        defaultFontOption.selected = true
+    }
+
+    const currentFont = (loadedLocalStorage.display.font ?? '').replaceAll(' ', '').toLowerCase()
+    bundleFontList.forEach(entry => {
+        const option = document.createElement("option")
+        option.text = entry[0]
+        option.value = entry[0]
+        const nameOnly = entry[1].split('|')[0]
+        option.style.fontFamily = `"${nameOnly}", var(--fallback-fonts)` // Preview (when browser-supported)
+        if (entry[1].includes('|')) {
+            option.style.cssText += entry[1].split('|')[1]
+        }
+        if (currentFont === entry[0].replaceAll(' ', '').toLowerCase()) {
+            option.selected = true
+        }
+        bundledFonts.appendChild(option)
+    })
+
+    bundledFonts.addEventListener("change", () => {
+        loadedLocalStorage.display.font = bundledFonts.value
+        writeInFont.setSelection(bundledFonts.value)
+        saveToLocalStorage()
+        applyDisplayPreferences()
+    })
+
+    writeInFont.searchbox.addEventListener("input", () => {
+        const trimmed = writeInFont.searchbox.value.trim()
+        const toFindInBundle = trimmed.replaceAll(' ', '').toLowerCase()
+        const index = bundleFontList.findIndex(entry => entry[0].replaceAll(' ', '').toLowerCase() === toFindInBundle)
+
+        if (index === -1) {
+            loadedLocalStorage.display.font = trimmed
+            defaultFontOption.selected = true            
+        } else {
+            loadedLocalStorage.display.font = bundleFontList[index][0]
+            for (let i = 0; i < bundledFonts.children.length; i++) {
+                const item = bundledFonts.children[i] as HTMLOptionElement;
+                if (item.tagName === 'OPTION' && writeInFont.searchbox.value.trim().toLowerCase() === item.text.toLowerCase()) {
+                    item.selected = true
+                }
+            }
+        }
+
+        saveToLocalStorage()
+        applyDisplayPreferences()
+    })
+
+    bundledFonts.parentElement!.appendChild(writeInFont.container)
+    //#endregion
+
+    //#region Line spacing
     const lineSpacing = document.getElementById('prefsLineHeight') as HTMLSelectElement
     lineSpacings.forEach(entry => {
         const option = document.createElement("option")
@@ -95,6 +148,67 @@ function _initPreferencesPage(): void {
     })
     //#endregion
 
+    //#region Paragraph margin
+    const paragraphMargin = document.getElementById('prefsParagraphMargin') as HTMLSelectElement
+    paragraphMargins.forEach(entry => {
+        const option = document.createElement("option")
+        option.text = entry[0]
+        option.value = entry[1]
+        if (loadedLocalStorage.display.paragraphMargin === entry[1]) {
+            option.selected = true
+        }
+        paragraphMargin.appendChild(option)
+    })
+
+    paragraphMargin.addEventListener("change", () => {
+        loadedLocalStorage.display.paragraphMargin = paragraphMargin.value
+        saveToLocalStorage()
+        applyDisplayPreferences()
+    })
+    //#endregion    
+
+    //#region Letter spacing
+    const letterSpacing = document.getElementById('prefsLetterSpacing') as HTMLSelectElement
+    letterSpacings.forEach(entry => {
+        const option = document.createElement("option")
+        option.text = entry[0]
+        option.value = entry[1]
+        if (loadedLocalStorage.display.letterSpacing === entry[1] ||
+            (!loadedLocalStorage.display.letterSpacing && option.value === '')) {
+            option.selected = true
+        }
+        letterSpacing.appendChild(option)
+    })
+
+    letterSpacing.addEventListener("change", () => {
+        loadedLocalStorage.display.letterSpacing = (letterSpacing.value === '')
+            ? undefined
+            : letterSpacing.value
+        
+        saveToLocalStorage()
+        applyDisplayPreferences()
+    })
+    //#endregion
+
+    //#region Word spacing
+    const wordSpacing = document.getElementById('prefsWordSpacing') as HTMLSelectElement
+    wordSpacings.forEach(entry => {
+        const option = document.createElement("option")
+        option.text = entry[0]
+        option.value = entry[1]
+        if (loadedLocalStorage.display.wordSpacing === entry[1]) {
+            option.selected = true
+        }
+        wordSpacing.appendChild(option)
+    })
+
+    wordSpacing.addEventListener("change", () => {
+        loadedLocalStorage.display.wordSpacing = wordSpacing.value
+        saveToLocalStorage()
+        applyDisplayPreferences()
+    })
+    //#endregion
+
     //#region Theme and custom filter
     const themeDropdown = document.getElementById('prefsTheme') as HTMLSelectElement
     const defaultThemeOption = document.createElement("option")
@@ -107,8 +221,12 @@ function _initPreferencesPage(): void {
     prefsCustomFilter.value = loadedLocalStorage.display.customCSSFilter ?? ''
     prefsCustomFilter.placeholder = resolveCSSFilter() // Show to make it easier to understand how to override it.
     prefsCustomFilter.addEventListener("input", () => {
-        loadedLocalStorage.display.customCSSFilter = (prefsCustomFilter.value.trim() === '')
-            ? undefined : prefsCustomFilter.value
+        if (prefsCustomFilter.value.trim() === '') {
+            loadedLocalStorage.display.customCSSFilter = undefined
+            prefsCustomFilter.placeholder = resolveCSSFilter()
+        } else {
+            loadedLocalStorage.display.customCSSFilter = prefsCustomFilter.value
+        }
         saveToLocalStorage()
     })
     prefsCustomFilter.addEventListener("blur", () => {
@@ -137,10 +255,19 @@ function _initPreferencesPage(): void {
 
     //#region Theme tint color
     const overlay = document.getElementById("overlay") as HTMLDivElement
+    const leftGutter = document.getElementById("leftGutter") as HTMLDivElement
+    const rightGutter = document.getElementById("rightGutter") as HTMLDivElement
     const overlayColor = document.getElementById("prefsTint") as HTMLInputElement
     overlayColor.value = loadedLocalStorage.display.overlayColor ?? "#000000"
+
+    // live preview (only when reduced motion is off)
     overlayColor.addEventListener('input', () => {
-        overlay.style.backgroundColor = overlayColor.value ?? "#000000" // preview
+        if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+            const col = overlayColor.value ?? "#000000"
+            overlay.style.backgroundColor = col
+            leftGutter.style.backgroundColor = col
+            rightGutter.style.backgroundColor = col
+        }
     })
     overlayColor.addEventListener('change', () => {
         loadedLocalStorage.display.overlayColor = overlayColor.value
@@ -150,23 +277,6 @@ function _initPreferencesPage(): void {
     //#endregion
 
     //#region Theme tint blend
-    const tintBlends = [
-        ['Color', 'color'],
-        ['Color Burn', 'color-burn'],
-        ['Color Dodge', 'color-dodge'],
-        ['Difference', 'difference'],
-        ['Exclusion', 'exclusion'],
-        ['Hard Light', 'hard-light'],
-        ['Hue', 'hue'],
-        ['Lighten', 'lighten'],
-        ['Luminosity', 'luminosity'],
-        ['Multiply', 'multiply'],
-        ['Overlay', 'overlay'],
-        ['Plus Lighter', 'plus-lighter'],
-        ['Saturation', 'saturation'],
-        ['Screen', 'screen'],
-        ['Soft Light', 'soft-light']]
-
         const tintBlending = document.getElementById('prefsTintMethod') as HTMLSelectElement
         const defaultBlendOption = document.createElement("option")
         defaultBlendOption.value = 'normal'
@@ -230,8 +340,9 @@ function _initPreferencesPage(): void {
                 prefsCustomFilter.placeholder = resolveCSSFilter()
             }
 
-            // Preview except for zoom (it's visually jarring).
-            if (entry !== items[0]) {
+            // Preview except for zoom (it's visually jarring / moves cursor position w.r.t. controls, which is bad).
+            const motionIsOk = !window.matchMedia("(prefers-reduced-motion: reduce)").matches
+            if (motionIsOk && entry !== items[0]) {
                 applyDisplayPreferences()
             }
         }
@@ -280,8 +391,8 @@ function _initPreferencesPage(): void {
 /** Refreshes all display styles dependent on display preferences/persisting variables. */
 export function applyDisplayPreferences(): void {
     applyTheme()
-    document.getElementById('bodyContainer')!.style.width =
-        `min(max(${loadedLocalStorage.display.columnWidth ?? '50vw'}, 30vw), 100vw)`
+    document.getElementById('page')!.style.width =
+        `min(max(${loadedLocalStorage.display.columnWidth ?? '50rem'}, 30rem), 100vw)`
     document.getElementById('mainColumn')!.style.lineHeight = loadedLocalStorage.display.lineHeight ?? '1rem'
 }
 

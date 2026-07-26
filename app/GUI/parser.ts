@@ -407,7 +407,7 @@ function _createForkLink(link: forkLink): HTMLButtonElement {
 
 /** Given text to show and speak, returns two spans configured so the 1st will show text that screen readers skip over,
  * and the second will be read by screen readers but remain invisible. This is used to create alt text for TEXT, to
- * fill a gap in HTML handling of screen reader support. See the "Supporting screen readers" section of WRITING.md. */
+ * fill a gap in HTML handling of screen reader support. See the "Alting text for screen readers" section of guide/Writing.md. */
 function _createAltedText(show: string, speak: string): HTMLSpanElement[] {
     const toShow = document.createElement('span')
     toShow.ariaHidden = 'true'

@@ -1,34 +1,41 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
     <head>
-        <script src="mainapp.js" defer></script>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="mainapp.js" defer></script> <!-- Javascript entrypoint -->
+
+        <!-- Core tags -->
+        <meta charset="utf-8"> <!-- Encoding of text returned by HTTP request so browsers can decode it properly. -->
+        <meta name="viewport" content="width=15rem, initial-scale=1.0"> <!-- 15rem width instead of device-width sets a minimum. -->
         <meta name="application-name" content="Locket">
-        <link rel="icon" type="image/x-icon" href="./favicon.ico">
-        <meta name="apple-mobile-web-app-title" content="Locket">
         <meta name="description" content="A cozy slice-of-life adventure where you find the meaning of life by living.">
-        <meta name="mobile-web-app-capable" content="yes">
+        <link rel="icon" type="image/x-icon" href="./favicon.ico">
+        <meta name="format-detection" content="telephone=no"> <!-- Prevents re-styling numbers that look like phone numbers. -->
+        <meta name="color-scheme" content="light dark"> <!-- Both light and dark themes are supported. -->
+
+        <!-- You can bookmark this site in a special way to look like a native app. This is called PWA (progressive web
+        app). Note: check in a few years if .svg icons are supported yet, so the icons folder can be removed. -->
+        <link rel="manifest" href="manifest.json">
+        <meta name="theme-color" content="#3b82f6"> <!-- Background color since SVG is transparent -->
         <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-        <meta name="theme-color" content="#CCFFCC">
-        <meta name="msapplication-TileColor" content="#8fa620">
-        <meta name="msapplication-config" content="./browserconfig.xml">
-        <meta name="format-detection" content="telephone=no">
-        <meta property="og:image" content="./icon_maskable_192.png">
-        <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
-        <link rel="manifest" href="./manifest.webmanifest">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="apple-mobile-web-app-title" content="Locket">
+        <link rel="apple-touch-icon" href="/icons/icon-180x180.png">
+        <link rel="icon" href="/icons/icon-192x192.png" type="image/png" sizes="192x192">
+        <link rel="icon" href="/icons/icon-512x512.png" type="image/png" sizes="512x512">
+
+        <!-- OG is "Open Graph" and is used to prettify social media embeds of the site. -->
+        <meta property="og:image" content="/icons/icon-192x192-maskable.png">
+
         <link rel="stylesheet" href="./styles.css">
         <title>Locket</title>
     </head>
     <body>
         <noscript>
-            <p>
-                You don't have Javascript enabled. This game needs Javascript to work, sorry!
-            </p>
+            <p>You don't have Javascript enabled. This needs Javascript to work. Sorry!</p>
         </noscript>
-        <div id="overlay"></div> <!-- Used to reduce contrast or add colored light for reading. -->
-        <div id="bodyContainer">
+        <div id="leftGutter"></div> <!-- Usually empty and used only for filter styles. -->
+        <div id="page">
+            <div id="overlay"></div> <!-- Used to reduce contrast or add colored light for reading. -->
             <header id="headerBar">
                 <button id="headerSettings">Settings</button>
             </header>
@@ -48,15 +55,41 @@
                             <input id="prefsZoomNum" type="number" min="0.8" max="4" value="1.5" step="0.1">
                         </fieldset>
                     </div>
+                    <p>Choose an included font or type one in that will load if it's on your device.</p>
+                    <div class="controlRow">
+                        <label for="prefsIncludedFonts">Font</label>
+                        <select id="prefsIncludedFonts">
+                            <!-- Options are generated programmatically. -->
+                        </select>
+                        <!-- A searchbox + dropdown gets rendered here with id prefsWriteInFont -->
+                    </div>
                     <div class="controlRow">
                         <label for="prefsColumnWidth">Reading column width</label>
-                        <select name="prefsColumnWidth" id="prefsColumnWidth">
+                        <select id="prefsColumnWidth">
                             <!-- Options are generated programmatically. -->
                         </select>
                     </div>
                     <div class="controlRow">
-                        <label for="prefsLineHeight">Reading space between lines</label>
-                        <select name="prefsLineHeight" id="prefsLineHeight">
+                        <label for="prefsLineHeight">Spacing between lines</label>
+                        <select id="prefsLineHeight">
+                            <!-- Options are generated programmatically. -->
+                        </select>
+                    </div>
+                    <div class="controlRow">
+                        <label for="prefsParagraphMargin">Spacing between paragraphs</label>
+                        <select id="prefsParagraphMargin">
+                            <!-- Options are generated programmatically. -->
+                        </select>
+                    </div>
+                    <div class="controlRow">
+                        <label for="prefsLetterSpacing">Space between letters</label>
+                        <select id="prefsLetterSpacing">
+                            <!-- Options are generated programmatically. -->
+                        </select>
+                    </div>
+                    <div class="controlRow">
+                        <label for="prefsWordSpacing">Space between words</label>
+                        <select id="prefsWordSpacing">
                             <!-- Options are generated programmatically. -->
                         </select>
                     </div>
@@ -72,7 +105,7 @@
                     <summary><h2>Theme</h2></summary>
                     <div class="controlRow">
                         <label for="prefsTheme">Theme</label>
-                        <select name="theme" id="prefsTheme">
+                        <select id="prefsTheme">
                             <!-- Options are generated programmatically. -->
                         </select>
                     </div>
@@ -121,7 +154,7 @@
                     </div>
                     <div class="controlRow">
                         <label for="prefsTintMethod">Tint method</label>
-                        <select name="prefsTintMethod" id="prefsTintMethod">
+                        <select id="prefsTintMethod">
                             <!-- Options are generated programmatically. -->
                         </select>
                     </div>
@@ -149,5 +182,6 @@
                 </div>
             </div>
         </div>
+        <div id="rightGutter"></div> <!-- Usually empty and used only for filter styles. -->
     </body>
 </html>
