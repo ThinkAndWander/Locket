@@ -2,7 +2,7 @@
 	"name": "locket_game",
 	"private": "true",
 	"version": "1.0.0",
-	"description": "A cozy slice-of-life adventure where you find the meaning of life by living.",
+	"description": "A cozy, accessible text game about friends and growing together",
 	"author": "ThinkAndWander",
 	"license": "MIT",
 	"homepage": "",
@@ -29,8 +29,6 @@
 		"typescript-eslint": "^8.62.0"
 	},
 	"dependencies": {
-		"@types/jquery": "^3.5.5",
-		"imperative-html": "^0.1.0",
 		"marked": "^18.0.5",
 		"marked-directive": "^1.0.7"
 	}

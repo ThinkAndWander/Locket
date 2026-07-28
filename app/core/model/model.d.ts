@@ -591,6 +591,9 @@ export type displayPreferences = {
     /** Additional or negative spacing between words (default 0). */
     wordSpacing?: string
 
+    /** A font-weight applied to all reading text, when set (default 400). */
+    fontWeight?: string
+
     /** Contrast from 20-200% (default 100%). Persists without effect if filter is defined. */
     readFilterContrast?: number
 

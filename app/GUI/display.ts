@@ -1,6 +1,6 @@
 import { allThemes } from "../core/model/model"
-import { loadedLocalStorage, saveToLocalStorage } from "../core/persistence"
-import { bundleFontList, columnWidths, knownFontNames, letterSpacings, lineSpacings, paragraphMargins, tintBlends, wordSpacings } from "./consts"
+import { storage, saveToLocalStorage } from "../core/persistence"
+import { boldLevels, bundleFontList, columnWidths, knownFontNames, letterSpacings, lineSpacings, paragraphMargins, tintBlends, wordSpacings } from "./consts"
 import { SuggestedInput } from "./SuggestedInput"
 import { applyTheme, resolveCSSFilter, themes } from "./theme"
 
@@ -52,14 +52,14 @@ function _initPreferencesPage(): void {
         const option = document.createElement("option")
         option.text = entry[0]
         option.value = entry[1]
-        if (loadedLocalStorage.display.columnWidth === entry[1]) {
+        if (storage.display.columnWidth === entry[1]) {
             option.selected = true
         }
         columnWidth.appendChild(option)
     })
 
     columnWidth.addEventListener("change", () => {
-        loadedLocalStorage.display.columnWidth = columnWidth.value
+        storage.display.columnWidth = columnWidth.value
         saveToLocalStorage()
         applyDisplayPreferences()
     })
@@ -67,7 +67,7 @@ function _initPreferencesPage(): void {
 
     //#region Font
     const bundledFonts = document.getElementById('prefsIncludedFonts') as HTMLSelectElement
-    const writeInFont = new SuggestedInput<never>(loadedLocalStorage.display.font, knownFontNames.map(name => ({ name })))
+    const writeInFont = new SuggestedInput<never>(storage.display.font, knownFontNames.map(name => ({ name })))
     writeInFont.searchbox.id = "prefsWriteInFont"
     writeInFont.searchbox.placeholder = "Name a font"
 
@@ -77,11 +77,11 @@ function _initPreferencesPage(): void {
         bundledFonts.appendChild(defaultFontOption)
         bundledFonts.appendChild(document.createElement('hr'))
 
-    if (!loadedLocalStorage.display.font) {
+    if (!storage.display.font) {
         defaultFontOption.selected = true
     }
 
-    const currentFont = (loadedLocalStorage.display.font ?? '').replaceAll(' ', '').toLowerCase()
+    const currentFont = (storage.display.font ?? '').replaceAll(' ', '').toLowerCase()
     bundleFontList.forEach(entry => {
         const option = document.createElement("option")
         option.text = entry[0]
@@ -98,7 +98,7 @@ function _initPreferencesPage(): void {
     })
 
     bundledFonts.addEventListener("change", () => {
-        loadedLocalStorage.display.font = bundledFonts.value
+        storage.display.font = bundledFonts.value
         writeInFont.setSelection(bundledFonts.value)
         saveToLocalStorage()
         applyDisplayPreferences()
@@ -110,10 +110,10 @@ function _initPreferencesPage(): void {
         const index = bundleFontList.findIndex(entry => entry[0].replaceAll(' ', '').toLowerCase() === toFindInBundle)
 
         if (index === -1) {
-            loadedLocalStorage.display.font = trimmed
+            storage.display.font = trimmed
             defaultFontOption.selected = true            
         } else {
-            loadedLocalStorage.display.font = bundleFontList[index][0]
+            storage.display.font = bundleFontList[index][0]
             for (let i = 0; i < bundledFonts.children.length; i++) {
                 const item = bundledFonts.children[i] as HTMLOptionElement;
                 if (item.tagName === 'OPTION' && writeInFont.searchbox.value.trim().toLowerCase() === item.text.toLowerCase()) {
@@ -129,62 +129,39 @@ function _initPreferencesPage(): void {
     bundledFonts.parentElement!.appendChild(writeInFont.container)
     //#endregion
 
-    //#region Line spacing
-    const lineSpacing = document.getElementById('prefsLineHeight') as HTMLSelectElement
-    lineSpacings.forEach(entry => {
-        const option = document.createElement("option")
-        option.text = entry[0]
-        option.value = entry[1]
-        if (loadedLocalStorage.display.lineHeight === entry[1]) {
-            option.selected = true
-        }
-        lineSpacing.appendChild(option)
-    })
-
-    lineSpacing.addEventListener("change", () => {
-        loadedLocalStorage.display.lineHeight = lineSpacing.value
-        saveToLocalStorage()
-        applyDisplayPreferences()
-    })
-    //#endregion
-
     //#region Paragraph margin
     const paragraphMargin = document.getElementById('prefsParagraphMargin') as HTMLSelectElement
     paragraphMargins.forEach(entry => {
         const option = document.createElement("option")
         option.text = entry[0]
         option.value = entry[1]
-        if (loadedLocalStorage.display.paragraphMargin === entry[1]) {
+        if (storage.display.paragraphMargin === entry[1]) {
             option.selected = true
         }
         paragraphMargin.appendChild(option)
     })
 
     paragraphMargin.addEventListener("change", () => {
-        loadedLocalStorage.display.paragraphMargin = paragraphMargin.value
+        storage.display.paragraphMargin = paragraphMargin.value
         saveToLocalStorage()
         applyDisplayPreferences()
     })
     //#endregion    
 
-    //#region Letter spacing
-    const letterSpacing = document.getElementById('prefsLetterSpacing') as HTMLSelectElement
-    letterSpacings.forEach(entry => {
+    //#region Line spacing
+    const lineSpacing = document.getElementById('prefsLineHeight') as HTMLSelectElement
+    lineSpacings.forEach(entry => {
         const option = document.createElement("option")
         option.text = entry[0]
         option.value = entry[1]
-        if (loadedLocalStorage.display.letterSpacing === entry[1] ||
-            (!loadedLocalStorage.display.letterSpacing && option.value === '')) {
+        if (storage.display.lineHeight === entry[1]) {
             option.selected = true
         }
-        letterSpacing.appendChild(option)
+        lineSpacing.appendChild(option)
     })
 
-    letterSpacing.addEventListener("change", () => {
-        loadedLocalStorage.display.letterSpacing = (letterSpacing.value === '')
-            ? undefined
-            : letterSpacing.value
-        
+    lineSpacing.addEventListener("change", () => {
+        storage.display.lineHeight = lineSpacing.value
         saveToLocalStorage()
         applyDisplayPreferences()
     })
@@ -196,18 +173,64 @@ function _initPreferencesPage(): void {
         const option = document.createElement("option")
         option.text = entry[0]
         option.value = entry[1]
-        if (loadedLocalStorage.display.wordSpacing === entry[1]) {
+        if (storage.display.wordSpacing === entry[1]) {
             option.selected = true
         }
         wordSpacing.appendChild(option)
     })
 
     wordSpacing.addEventListener("change", () => {
-        loadedLocalStorage.display.wordSpacing = wordSpacing.value
+        storage.display.wordSpacing = wordSpacing.value
         saveToLocalStorage()
         applyDisplayPreferences()
     })
     //#endregion
+
+    //#region Letter spacing
+    const letterSpacing = document.getElementById('prefsLetterSpacing') as HTMLSelectElement
+    letterSpacings.forEach(entry => {
+        const option = document.createElement("option")
+        option.text = entry[0]
+        option.value = entry[1]
+        if (storage.display.letterSpacing === entry[1] ||
+            (!storage.display.letterSpacing && option.value === '')) {
+            option.selected = true
+        }
+        letterSpacing.appendChild(option)
+    })
+
+    letterSpacing.addEventListener("change", () => {
+        storage.display.letterSpacing = (letterSpacing.value === '')
+            ? undefined
+            : letterSpacing.value
+        
+        saveToLocalStorage()
+        applyDisplayPreferences()
+    })
+    //#endregion
+
+    //#region Font Weight
+    const fontWeight = document.getElementById('prefsAlwaysBold') as HTMLSelectElement
+    boldLevels.forEach(entry => {
+        const option = document.createElement("option")
+        option.text = entry[0]
+        option.value = entry[1]
+        if (storage.display.fontWeight === entry[1] ||
+            (!storage.display.fontWeight && option.value === '')) {
+            option.selected = true
+        }
+        letterSpacing.appendChild(option)
+    })
+
+    fontWeight.addEventListener("change", () => {
+        storage.display.letterSpacing = (letterSpacing.value === '')
+            ? undefined
+            : letterSpacing.value
+        
+        saveToLocalStorage()
+        applyDisplayPreferences()
+    })
+    //fontWeight
 
     //#region Theme and custom filter
     const themeDropdown = document.getElementById('prefsTheme') as HTMLSelectElement
@@ -218,14 +241,14 @@ function _initPreferencesPage(): void {
         themeDropdown.appendChild(document.createElement('hr'))
 
     const prefsCustomFilter = document.getElementById('prefsCustomFilter') as HTMLTextAreaElement
-    prefsCustomFilter.value = loadedLocalStorage.display.customCSSFilter ?? ''
+    prefsCustomFilter.value = storage.display.customCSSFilter ?? ''
     prefsCustomFilter.placeholder = resolveCSSFilter() // Show to make it easier to understand how to override it.
     prefsCustomFilter.addEventListener("input", () => {
         if (prefsCustomFilter.value.trim() === '') {
-            loadedLocalStorage.display.customCSSFilter = undefined
+            storage.display.customCSSFilter = undefined
             prefsCustomFilter.placeholder = resolveCSSFilter()
         } else {
-            loadedLocalStorage.display.customCSSFilter = prefsCustomFilter.value
+            storage.display.customCSSFilter = prefsCustomFilter.value
         }
         saveToLocalStorage()
     })
@@ -237,7 +260,7 @@ function _initPreferencesPage(): void {
         const option = document.createElement("option")
         option.value = theme[0]
         option.text = theme[1].name
-        if (loadedLocalStorage.theme === theme[0]) {
+        if (storage.theme === theme[0]) {
             option.selected = true
         }
         themeDropdown.appendChild(option)
@@ -246,7 +269,7 @@ function _initPreferencesPage(): void {
     themeDropdown.addEventListener("change", () => {
         const selectedTheme = themeDropdown.value as "" | keyof allThemes
         if (selectedTheme !== undefined) {
-            loadedLocalStorage.theme = selectedTheme
+            storage.theme = selectedTheme
             saveToLocalStorage()
             applyDisplayPreferences()
         }
@@ -258,7 +281,7 @@ function _initPreferencesPage(): void {
     const leftGutter = document.getElementById("leftGutter") as HTMLDivElement
     const rightGutter = document.getElementById("rightGutter") as HTMLDivElement
     const overlayColor = document.getElementById("prefsTint") as HTMLInputElement
-    overlayColor.value = loadedLocalStorage.display.overlayColor ?? "#000000"
+    overlayColor.value = storage.display.overlayColor ?? "#000000"
 
     // live preview (only when reduced motion is off)
     overlayColor.addEventListener('input', () => {
@@ -270,7 +293,7 @@ function _initPreferencesPage(): void {
         }
     })
     overlayColor.addEventListener('change', () => {
-        loadedLocalStorage.display.overlayColor = overlayColor.value
+        storage.display.overlayColor = overlayColor.value
         saveToLocalStorage()
         applyDisplayPreferences()
     })
@@ -287,14 +310,14 @@ function _initPreferencesPage(): void {
             const option = document.createElement("option")
             option.text = entry[0]
             option.value = entry[1]
-            if (loadedLocalStorage.display.overlayBlending === entry[1]) {
+            if (storage.display.overlayBlending === entry[1]) {
                 option.selected = true
             }
             tintBlending.appendChild(option)
         })
 
         tintBlending.addEventListener("change", () => {
-        loadedLocalStorage.display.overlayBlending = tintBlending.value
+        storage.display.overlayBlending = tintBlending.value
         saveToLocalStorage()
         applyDisplayPreferences()
     })
@@ -304,23 +327,23 @@ function _initPreferencesPage(): void {
     // Clamps to range because Narrator has a bug that lets you violate bounds.
     // The minimums for the CSS filters are set to keep the site usable for sighted users fidgeting with controls.
     const items = [
-        ['prefsZoom', `${loadedLocalStorage.display.zoom ?? '1.5'}`, (newValue: number) => {
-            loadedLocalStorage.display.zoom = Math.min(Math.max(newValue ?? 1.5, 0.8), 4)
+        ['prefsZoom', `${storage.display.zoom ?? '1.5'}`, (newValue: number) => {
+            storage.display.zoom = Math.min(Math.max(newValue ?? 1.5, 0.8), 4)
         }],
-        ['prefsFilterContrast', `${loadedLocalStorage.display.readFilterContrast ?? '100'}`, (newValue: number) => {
-            loadedLocalStorage.display.readFilterContrast = Math.min(Math.max(newValue ?? 100, 20), 200)
+        ['prefsFilterContrast', `${storage.display.readFilterContrast ?? '100'}`, (newValue: number) => {
+            storage.display.readFilterContrast = Math.min(Math.max(newValue ?? 100, 20), 200)
         }],
-        ['prefsFilterSaturation', `${loadedLocalStorage.display.readFilterSaturate ?? '100'}`, (newValue: number) => {
-            loadedLocalStorage.display.readFilterSaturate = Math.min(Math.max(newValue ?? 100, 0), 1000)
+        ['prefsFilterSaturation', `${storage.display.readFilterSaturate ?? '100'}`, (newValue: number) => {
+            storage.display.readFilterSaturate = Math.min(Math.max(newValue ?? 100, 0), 1000)
         }],
-        ['prefsFilterBrightness', `${loadedLocalStorage.display.readFilterBrightness ?? '100'}`, (newValue: number) => {
-            loadedLocalStorage.display.readFilterBrightness = Math.min(Math.max(newValue ?? 100, 30), 200)
+        ['prefsFilterBrightness', `${storage.display.readFilterBrightness ?? '100'}`, (newValue: number) => {
+            storage.display.readFilterBrightness = Math.min(Math.max(newValue ?? 100, 30), 200)
         }],
-        ['prefsFilterHue', `${loadedLocalStorage.display.readFilterHue ?? '0'}`, (newValue: number) => {
-            loadedLocalStorage.display.readFilterHue = Math.min(Math.max(newValue ?? 0, 0), 360)
+        ['prefsFilterHue', `${storage.display.readFilterHue ?? '0'}`, (newValue: number) => {
+            storage.display.readFilterHue = Math.min(Math.max(newValue ?? 0, 0), 360)
         }],
-        ['prefsTintOpacity', `${loadedLocalStorage.display.overlayOpacity ?? '0'}`, (newValue: number) => {
-            loadedLocalStorage.display.overlayOpacity = Math.min(Math.max(newValue ?? 0, 0), 90)
+        ['prefsTintOpacity', `${storage.display.overlayOpacity ?? '0'}`, (newValue: number) => {
+            storage.display.overlayOpacity = Math.min(Math.max(newValue ?? 0, 0), 90)
         }]
     ] as const;
     items.forEach(entry => {
@@ -355,15 +378,15 @@ function _initPreferencesPage(): void {
     //#region Custom JS and CSS
     const userJS = document.getElementById('prefsCustomJS') as HTMLTextAreaElement
     const userCSS = document.getElementById('prefsCustomCSS') as HTMLTextAreaElement
-    userJS.value = loadedLocalStorage.display.customJS ?? ''
+    userJS.value = storage.display.customJS ?? ''
     userJS.addEventListener("input", () => {
-        loadedLocalStorage.display.customJS = (userJS.value.trim() === '')
+        storage.display.customJS = (userJS.value.trim() === '')
             ? undefined : userJS.value
         saveToLocalStorage()
     })
-    userCSS.value = loadedLocalStorage.display.customCSS ?? ''
+    userCSS.value = storage.display.customCSS ?? ''
     userCSS.addEventListener("input", () => {
-        loadedLocalStorage.display.customCSS = (userCSS.value.trim() === '')
+        storage.display.customCSS = (userCSS.value.trim() === '')
             ? undefined : userCSS.value
         saveToLocalStorage()
     })
@@ -373,16 +396,16 @@ function _initPreferencesPage(): void {
     //#endregion
 
     const prefsRunCode = document.getElementById('prefsRunCode') as HTMLInputElement
-    prefsRunCode.checked = loadedLocalStorage.display.executeCodeAndHtml ?? true
+    prefsRunCode.checked = storage.display.executeCodeAndHtml ?? true
     prefsRunCode?.addEventListener('change', () => {
-        loadedLocalStorage.display.executeCodeAndHtml = prefsRunCode.checked
+        storage.display.executeCodeAndHtml = prefsRunCode.checked
         saveToLocalStorage()
     })
 
     const prefsDisabledControls = document.getElementById('prefsDisabledControls') as HTMLInputElement
-    prefsDisabledControls.checked = loadedLocalStorage.display.showDisabledStatus ?? false
+    prefsDisabledControls.checked = storage.display.showDisabledStatus ?? false
     prefsDisabledControls?.addEventListener('change', () => {
-        loadedLocalStorage.display.showDisabledStatus = prefsDisabledControls.checked
+        storage.display.showDisabledStatus = prefsDisabledControls.checked
         saveToLocalStorage()
         applyDisplayPreferences()
     })
@@ -392,8 +415,8 @@ function _initPreferencesPage(): void {
 export function applyDisplayPreferences(): void {
     applyTheme()
     document.getElementById('page')!.style.width =
-        `min(max(${loadedLocalStorage.display.columnWidth ?? '50rem'}, 30rem), 100vw)`
-    document.getElementById('mainColumn')!.style.lineHeight = loadedLocalStorage.display.lineHeight ?? '1rem'
+        `min(max(${storage.display.columnWidth ?? '50rem'}, 30rem), 100vw)`
+    document.getElementById('mainColumn')!.style.lineHeight = storage.display.lineHeight ?? '1rem'
 }
 
 /** Append any HTML element to the output. If all output is cleared, use the "autofocus" property on the first item to

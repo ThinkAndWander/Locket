@@ -4,10 +4,10 @@
         <script src="mainapp.js" defer></script> <!-- Javascript entrypoint -->
 
         <!-- Core tags -->
-        <meta charset="utf-8"> <!-- Encoding of text returned by HTTP request so browsers can decode it properly. -->
-        <meta name="viewport" content="width=15rem, initial-scale=1.0"> <!-- 15rem width instead of device-width sets a minimum. -->
+        <meta charset="utf-8"> <!-- Encoding of text returned by HTTP request so browsers can decode it. -->
+        <meta name="viewport" content="width=15rem, initial-scale=1.0"> <!-- 15rem width is the minimum. -->
         <meta name="application-name" content="Locket">
-        <meta name="description" content="A cozy slice-of-life adventure where you find the meaning of life by living.">
+        <meta name="description" content="A cozy, accessible text game about friends and growing together">
         <link rel="icon" type="image/x-icon" href="./favicon.ico">
         <meta name="format-detection" content="telephone=no"> <!-- Prevents re-styling numbers that look like phone numbers. -->
         <meta name="color-scheme" content="light dark"> <!-- Both light and dark themes are supported. -->
@@ -22,12 +22,20 @@
         <link rel="apple-touch-icon" href="/icons/icon-180x180.png">
         <link rel="icon" href="/icons/icon-192x192.png" type="image/png" sizes="192x192">
         <link rel="icon" href="/icons/icon-512x512.png" type="image/png" sizes="512x512">
-
-        <!-- OG is "Open Graph" and is used to prettify social media embeds of the site. -->
-        <meta property="og:image" content="/icons/icon-192x192-maskable.png">
+        <title>Locket text adventure, in opening sequence</title>
+        
+        <!-- OG (Open Graph) tags control social media embeds + support various 3rd-party tools, e.g. Instaparser -->
+        <meta property="og:type" content="website">
+        <meta property="og:title" content="Locket">
+        <meta property="og:description" content="A cozy, accessible text game about friends and growing together">
+        <meta property="og:image" content="https://github.com/ThinkAndWander/Locket/blob/main/website/icons/icon-1200x630.png">
+        <meta property="og:image:alt" content="Abstract visual of a locket">
+        <meta property="og:image:width" content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="og:url" content="thinkandwander.github.io/Locket">
+        <meta property="og:site_name" content="Locket">
 
         <link rel="stylesheet" href="./styles.css">
-        <title>Locket</title>
     </head>
     <body>
         <noscript>
@@ -70,26 +78,32 @@
                         </select>
                     </div>
                     <div class="controlRow">
-                        <label for="prefsLineHeight">Spacing between lines</label>
-                        <select id="prefsLineHeight">
-                            <!-- Options are generated programmatically. -->
-                        </select>
-                    </div>
-                    <div class="controlRow">
-                        <label for="prefsParagraphMargin">Spacing between paragraphs</label>
+                        <label for="prefsParagraphMargin">Paragraph spacing</label>
                         <select id="prefsParagraphMargin">
                             <!-- Options are generated programmatically. -->
                         </select>
                     </div>
                     <div class="controlRow">
-                        <label for="prefsLetterSpacing">Space between letters</label>
+                        <label for="prefsLineHeight">Line spacing</label>
+                        <select id="prefsLineHeight">
+                            <!-- Options are generated programmatically. -->
+                        </select>
+                    </div>
+                    <div class="controlRow">
+                        <label for="prefsWordSpacing">Word spacing</label>
+                        <select id="prefsWordSpacing">
+                            <!-- Options are generated programmatically. -->
+                        </select>
+                    </div>
+                    <div class="controlRow">
+                        <label for="prefsLetterSpacing">Letter spacing</label>
                         <select id="prefsLetterSpacing">
                             <!-- Options are generated programmatically. -->
                         </select>
                     </div>
                     <div class="controlRow">
-                        <label for="prefsWordSpacing">Space between words</label>
-                        <select id="prefsWordSpacing">
+                        <label for="prefsAlwaysBold">Bolding</label>
+                        <select id="prefsAlwaysBold">
                             <!-- Options are generated programmatically. -->
                         </select>
                     </div>
@@ -137,7 +151,9 @@
                             <input id="prefsFilterHueNum" type="number" min="0" max="360" value="0">
                         </fieldset>
                     </div>
-                    <p>You may use the following <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/filter#syntax">filter CSS</a> to fine-tune.</p>
+                    <p>You may use the following
+                        <a aria-label="Reference for CSS filters on MDN" href="https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/filter#syntax">filter CSS</a>
+                        to fine-tune.</p>
                     <label for="prefsCustomFilter">Theme filter</label>
                     <textarea id="prefsCustomFilter" spellcheck="false"></textarea>
                 </details>
@@ -170,6 +186,7 @@
                 </details>
                 <details name="preferenceCategory">
                     <summary><h2>Miscellaneous</h2></summary>
+                    <p>Disabling code in stories may break them.</p>
                     <div class="controlRow">
                         <label for="prefsRunCode">Allow story code?</label>
                         <input id="prefsRunCode" type="checkbox">

@@ -87,7 +87,7 @@
 }
 
 :root {
-    --fallback-fonts: "STIX Two", "Noto Serif", serif
+    --fallback-fonts: "STIX Two", "Noto Serif", serif;
 }
 
 /* Along with flex-grow on body, this makes the body fill all space. */
@@ -316,21 +316,4 @@ textarea {
     .suggestableInputContainer:not(:focus-within):not(:has(input[type='text']:focus)) .suggestableInputTray {
         display: none;
     }
-}
-
-/* Automatically decorate external links to mark them as such. An intentional visual-only enhancement. Don't worry,
-since screen readers say the link first, it will still be clear for them. This is only a nice-to-have. */
-a[href]:not(:where(
-  [href^="#"], /* exclude hash only links */
-  [href^="javascript:" i], /* exclude javascript only links */
-  [href^="/"]:not([href^="//"]), /* exclude relative but not double slash only links */
-  [href*="//stackoverflow.com"], /* domains to exclude */
-  [href*="//meta.stackoverflow.com"], /* subdomains to exclude */
-)):after {
-    content: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 31.55 31.49'%3E%3Cdefs%3E%3CclipPath id='a'%3E%3Cpath d='M0 0h32v32H0z'/%3E%3C/clipPath%3E%3C/defs%3E%3Cg fill='none' stroke='%23000' stroke-width='3' clip-path='url(%23a)' transform='translate(-.2 -.2)'%3E%3Cpath d='M21.7 1.7h8.56m0-1.5v9.94m0-8.44L14.52 17.46M13.99 2.7H.2m29.06 27.5V17.98m1.5 12.22H.21m1.5.07V1.7'/%3E%3C/g%3E%3C/svg%3E");
-    display: inline-block;
-    height: 0.6rem;
-    width: 0.6rem;
-    padding-left: 0.2rem;
-    vertical-align: super;
 }

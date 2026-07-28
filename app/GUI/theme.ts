@@ -1,5 +1,5 @@
 import { allThemes, dynamicTheme, theme, themeBase, themeBasedOn } from "../core/model/model"
-import { loadedLocalStorage, saveToLocalStorage } from "../core/persistence"
+import { storage, saveToLocalStorage } from "../core/persistence"
 import { bundleFontList } from "./consts"
 
 let everInitTheme = false
@@ -333,23 +333,23 @@ export const themes: allThemes = {
 
 /** Returns a combined CSS filter from local storage preferences. */
 export function resolveCSSFilter(): string {
-    let readingFilter = loadedLocalStorage.display.customCSSFilter ?? ''
+    let readingFilter = storage.display.customCSSFilter ?? ''
     if (readingFilter === '') {
-        if (loadedLocalStorage.display.readFilterHue &&
-            loadedLocalStorage.display.readFilterHue !== 0) { // allow value 0 to omit this entirely.
-            readingFilter = `sepia(100%) hue-rotate(${loadedLocalStorage.display.readFilterHue}deg) `
+        if (storage.display.readFilterHue &&
+            storage.display.readFilterHue !== 0) { // allow value 0 to omit this entirely.
+            readingFilter = `sepia(100%) hue-rotate(${storage.display.readFilterHue}deg) `
         }
-        if (loadedLocalStorage.display.readFilterContrast !== undefined &&
-            loadedLocalStorage.display.readFilterContrast !== 100) {
-            readingFilter += `contrast(${loadedLocalStorage.display.readFilterContrast}%) `
+        if (storage.display.readFilterContrast !== undefined &&
+            storage.display.readFilterContrast !== 100) {
+            readingFilter += `contrast(${storage.display.readFilterContrast}%) `
         }
-        if (loadedLocalStorage.display.readFilterSaturate !== undefined &&
-            loadedLocalStorage.display.readFilterSaturate !== 100) {
-            readingFilter += `saturate(${loadedLocalStorage.display.readFilterSaturate}%) `
+        if (storage.display.readFilterSaturate !== undefined &&
+            storage.display.readFilterSaturate !== 100) {
+            readingFilter += `saturate(${storage.display.readFilterSaturate}%) `
         }
-        if (loadedLocalStorage.display.readFilterBrightness !== undefined &&
-            loadedLocalStorage.display.readFilterBrightness !== 100) {
-            readingFilter += `brightness(${loadedLocalStorage.display.readFilterBrightness}%) `
+        if (storage.display.readFilterBrightness !== undefined &&
+            storage.display.readFilterBrightness !== 100) {
+            readingFilter += `brightness(${storage.display.readFilterBrightness}%) `
         }
     }
 
@@ -369,7 +369,7 @@ export function applyTheme(givenTheme?: theme): void {
     }
     _userCSSStyles = new CSSStyleSheet()
 
-    const userCSS = loadedLocalStorage.display.customCSS ?? '';
+    const userCSS = storage.display.customCSS ?? '';
     if (userCSS !== '') {
         _userCSSStyles.replace(userCSS)
     }
@@ -386,12 +386,12 @@ export function applyTheme(givenTheme?: theme): void {
         window.matchMedia("(forced-colors: active)").addEventListener("change", _ => applyTheme())
 
         // Attempt to run user Javascript *once*.
-        if (loadedLocalStorage.display.customJS) {
+        if (storage.display.customJS) {
             try {
-                Function(loadedLocalStorage.display.customJS)()
+                Function(storage.display.customJS)()
             } catch (err) { // Catch and comment out the JS for stability.
                 console.log(err) // javascript devs will find the error useful.
-                loadedLocalStorage.display.customJS = `/**${loadedLocalStorage.display.customJS}*/`
+                storage.display.customJS = `/**${storage.display.customJS}*/`
                 // Let JS textarea de-sync so the user can edit their script w/o having to uncomment each time.
                 saveToLocalStorage()
             }
@@ -404,7 +404,7 @@ export function applyTheme(givenTheme?: theme): void {
 
     // Resolves saved font name as a bundled font name, even space-free, or total write-in. Found entries have a 2nd
     // entry for optional style overrides.
-    let resolvedFontData = [loadedLocalStorage.display.font ?? '', '']
+    let resolvedFontData = [storage.display.font ?? '', '']
     const current = resolvedFontData[0].replaceAll(' ', '').toLowerCase()
     const index = bundleFontList.findIndex(entry => current === entry[0].replaceAll(' ', '').toLowerCase())
     if (index !== -1) {
@@ -415,24 +415,52 @@ export function applyTheme(givenTheme?: theme): void {
     // It's easy to forget semi-colons here and hard to debug, fair warning.
     const rules: string[] = [
         ...((css as themeBasedOn).themeCSS ? (css as themeBasedOn).themeCSS! : []),
-        `#overlay,
+        /* Decorate external links visually. Ok for screen readers; this is only a nice-to-have. */ `
+        a[href]:not(:where(
+        [href^="#"], /* exclude hash only links */
+        [href^="javascript:" i], /* exclude javascript only links */
+        [href^="/"]:not([href^="//"]), /* exclude relative but not double slash only links */
+        [href*="//stackoverflow.com"], /* domains to exclude */
+        [href*="//meta.stackoverflow.com"], /* subdomains to exclude */
+        )):after {
+            content: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 31.55 31.49'%3E%3Cdefs%3E%3CclipPath id='a'%3E%3Cpath d='M0 0h32v32H0z'/%3E%3C/clipPath%3E%3C/defs%3E%3Cg fill='none' stroke='${css.text}' stroke-width='3' clip-path='url(%23a)' transform='translate(-.2 -.2)'%3E%3Cpath d='M21.7 1.7h8.56m0-1.5v9.94m0-8.44L14.52 17.46M13.99 2.7H.2m29.06 27.5V17.98m1.5 12.22H.21m1.5.07V1.7'/%3E%3C/g%3E%3C/svg%3E");
+            display: inline-block;
+            height: 0.6rem;
+            width: 0.6rem;
+            padding-left: 0.2rem;
+            vertical-align: super;
+        }`,`
+        #overlay,
         #leftGutter,
         #rightGutter {
-            background: ${loadedLocalStorage.display.overlayColor};
-            display: ${loadedLocalStorage.display.overlayOpacity === 0 ? 'none' : ''};
-            opacity: ${loadedLocalStorage.display.overlayOpacity ?? 0}%;
-            mix-blend-mode: ${loadedLocalStorage.display.overlayBlending ?? 'normal'}
+            background: ${storage.display.overlayColor};
+            display: ${storage.display.overlayOpacity === 0 ? 'none' : ''};
+            opacity: ${storage.display.overlayOpacity ?? 0}%;
+            mix-blend-mode: ${storage.display.overlayBlending ?? 'normal'}
         }`,`
         #page,
         #leftGutter,
         #rightGutter {
             filter: ${resolveCSSFilter()};
         }`,`
+        #outputArea {
+            ${storage.display.paragraphMargin
+                ? `& span p {
+                    margin-bottom: ${storage.display.paragraphMargin};
+                }` : ''}
+        }
+        `,`
         #mainColumn {
-            font-family:${loadedLocalStorage.display.font !== undefined
+            font-family:${storage.display.font !== undefined
                 ? resolvedFontData[0] + ', '
                 : ''}var(--fallback-fonts);
-            ${resolvedFontData[1]}
+            ${resolvedFontData[1] /* May set letter-spacing, etc. Put first so user settings can override. */}
+            ${storage.display.wordSpacing
+                ? `word-spacing: ${storage.display.wordSpacing};`
+                : ''}
+            ${storage.display.letterSpacing
+                ? `letter-spacing: ${storage.display.letterSpacing};`
+                : ''}
         }
         `, `
         body {
@@ -465,7 +493,7 @@ export function applyTheme(givenTheme?: theme): void {
                 opacity: 0.8;
             }
 
-            ${loadedLocalStorage.display.showDisabledStatus ? '' : `
+            ${storage.display.showDisabledStatus ? '' : `
                 & button:disabled,
                 & select:disabled,
                 & input:disabled {
@@ -526,9 +554,9 @@ export function applyTheme(givenTheme?: theme): void {
         `#headerBar,
         #mainColumn,
         #preferences {
-            zoom: ${loadedLocalStorage.display.zoom ?? '1.5'};
+            zoom: ${storage.display.zoom ?? '1.5'};
         }`,
-        loadedLocalStorage.display.showDisabledStatus ? `
+        storage.display.showDisabledStatus ? `
             button:disabled:after {
             content: " 🛇";
             line-height: 1rem;`/* Firefox (Linux) needs this */+`
@@ -556,7 +584,7 @@ function resolveTheme(hiContrast: boolean, loContrast: boolean, name?: keyof all
     const wantsDarkMode = window.matchMedia("(prefers-color-scheme: dark)").matches
 
     let css: theme
-    let themeName = name ?? loadedLocalStorage.theme
+    let themeName = name ?? storage.theme
 
     // Use the named theme, mixing in the base theme if any.
     if (themeName !== '') {

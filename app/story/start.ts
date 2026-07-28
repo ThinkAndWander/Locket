@@ -1,6 +1,6 @@
 import { newHeadmate } from "../core/model/headmates"
 import { game } from "../core/model/model"
-import { loadedLocalStorage, loadFromLocalStorage } from "../core/persistence"
+import { storage, loadFromLocalStorage } from "../core/persistence"
 import { initDisplay } from "../GUI/display"
 import { initParsing, jumpToFork, separateIntoForks } from "../GUI/parser"
 import { mainStory } from "../story.md"
@@ -20,7 +20,7 @@ export function init(): void {
     // Initializes the game
     game = {
         player: {
-            milestones: loadedLocalStorage.milestones,
+            milestones: storage.milestones,
             system: {
                 headmates: [],
                 systemName: undefined
