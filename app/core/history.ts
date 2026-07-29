@@ -1,41 +1,70 @@
 /** Simple undo-redo stack that stores diffs. No fancy stuff, but it can be expanded for that as needed. */
-type history<T> = {
-  /** The current value of the history. */
-  current: T,
+type history<T extends object> = {
+    /** The current value of the history. */
+    current: T,
 
-  /** The changes in the history value. Deletions do not happen. */
-  deltas: Partial<T>[],
+    /** The changes in the history value. Deletions do not happen. */
+    deltas: Partial<T>[],
 
-  /** The position in the delta array. Earlier = undo, later = redo. Up-to-date is the last element. */
-  deltaIndex: number
+    /** The position in the delta array. Earlier = undo, later = redo. Up-to-date is the last element. */
+    deltaIndex: number
 }
 
-export function redo(changes: Partial<storageData>): void {
-  forEachProperty()
+/** Redo one item in the history if there is anything to redo. */
+export function redo<T extends object>(history: history<T>): void {
+
+    if (history.deltaIndex < history.deltas.length - 1) {
+
+        forEachProperty(history.current, (tree, keyIndex) => {
+            
+            tree.reduce()
+
+            if (Array.isArray(container)) {
+                history.current
+                storage[keyIndex]
+            } else {
+                storage[keyIndex]
+            }
+        })
+
+        history.deltaIndex++
+    }
 }
 
-/** Iterates objects and arrays and performs a callback on each leaf node. Used for undo. */
+type container = {[key: string]: any} | any[]
+type indexer = string | number
+
+/** Simple object-array iterator. Does not detect cycles in graph, or expand iterators, or DOM. A callback is made on
+ * each leaf node, giving the current container (array or object), the name of the key or index number to retrieve the
+ * value (such as[this] for arrays or as.this, which will require checking the type), and an array of 2-tuples of prior
+ * container+indexer values (in order from start to end). That tree is empty at root level, so it only has a value
+ * after
+ */
 function forEachProperty(
-  root: {[key: string]: any} | any[],
-  stufftodo: (container: {[key: string]: any} | any[], keyOrIndex: string|number) => void)
+    root: container,
+    callback: (parentTree: [container, indexer][], keyOrIndex: indexer) => void,
+    parentTree?: [container, indexer][])
 {
-  if (Array.isArray(root)) {
-      root.forEach((entry, index) => {
-          if (entry !== null && (Array.isArray(entry) || typeof entry === 'object')) {
-              forEachProperty(entry, stufftodo)
-          } else {
-              stufftodo(root, index)
-          }
-      })
-  }
-  else if (typeof root === 'object') {
-      const keys = Object.keys(root)
-      keys.forEach(key => {
-          if (root[key] !== null && (Array.isArray(root[key]) || typeof root[key] === 'object')) {
-              forEachProperty(root[key], stufftodo)
-          } else {
-              stufftodo(root, key)
-          }
-      })
-  }
+    parentTree ??= []
+
+    if (Array.isArray(root)) {
+        root.forEach((entry, index) => {
+            if (entry !== null && (Array.isArray(entry) || typeof entry === 'object')) {
+                parentTree.push([root, entry])
+                forEachProperty(entry, callback, parentTree.map(o => [...o]))
+            } else {
+                callback(parentTree, index)
+            }
+        })
+    } else if (typeof root === 'object') {
+        const keys = Object.keys(root)
+        keys.forEach(key => {
+            if (root[key] !== null && (Array.isArray(root[key]) || typeof root[key] === 'object')) {
+                parentTree.push([root, key])
+                forEachProperty(root[key], callback, parentTree)
+            } else {
+                callback(parentTree, key)
+            }
+        })
+    }
 }
