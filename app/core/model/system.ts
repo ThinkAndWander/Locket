@@ -1,6 +1,6 @@
 import { isFronting, newHeadmate } from "./headmates"
 import { attribute, headmate, frontingPresenceType, stat, system } from "./model"
-import { pronouns } from "./placeholders"
+import { pronouns } from '../../GUI/consts'
 
 /** Returns the number of fronting headmates (anonymous and known), and all known headmates. */
 export function getFronters(character: system): { headmates: headmate[], count: number } {

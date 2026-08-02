@@ -18,6 +18,8 @@ The copyrights of the individual bundled fonts at time of inclusion are:
 
   "Roboto": Copyright 2011 The Roboto Project Authors (https://github.com/googlefonts/roboto-classic)
 
+  "Lexend": Copyright 2018 The Lexend Project Authors (https://github.com/googlefonts/lexend), with Reserved Font Name “RevReading Lexend”.
+
 Eve L is the main author and the sole licensor of this work.
 Derived or adapted works must attribute "Eve L and contributors", and link to https://github.com/ThinkAndWander/Locket
 

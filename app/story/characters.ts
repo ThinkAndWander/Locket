@@ -1,6 +1,6 @@
 import { newHeadmate } from "../core/model/headmates"
-import { pronouns } from "../core/model/placeholders"
 import { system, headmate, character } from "../core/model/model"
+import { pronouns } from '../GUI/consts'
 
 let _autoID = 0
 

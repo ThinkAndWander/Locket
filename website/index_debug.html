@@ -44,6 +44,7 @@
         <div id="leftGutter"></div> <!-- Usually empty and used only for filter styles. -->
         <div id="page">
             <div id="overlay"></div> <!-- Used to reduce contrast or add colored light for reading. -->
+            <div id="readRuler"></div> <!-- Used to follow the reader's pointing device to help them see their place. -->
             <header id="headerBar">
                 <button id="headerSettings">Settings</button>
             </header>
@@ -70,6 +71,13 @@
                             <!-- Options are generated programmatically. -->
                         </select>
                         <!-- A searchbox + dropdown gets rendered here with id prefsWriteInFont -->
+                    </div>
+                    <p>Boldings except "Default" and "Bold" need a variable font, like Noto Serif</p>
+                    <div class="controlRow">
+                        <label for="prefsAlwaysBold">Font Bolding</label>
+                        <select id="prefsAlwaysBold">
+                            <!-- Options are generated programmatically. -->
+                        </select>
                     </div>
                     <div class="controlRow">
                         <label for="prefsColumnWidth">Reading column width</label>
@@ -101,18 +109,24 @@
                             <!-- Options are generated programmatically. -->
                         </select>
                     </div>
-                    <div class="controlRow">
-                        <label for="prefsAlwaysBold">Bolding</label>
-                        <select id="prefsAlwaysBold">
-                            <!-- Options are generated programmatically. -->
-                        </select>
-                    </div>
                 </details>
                 <details name="preferenceCategory">
                     <summary><h2>Accessibility</h2></summary>
                     <div class="controlRow">
                         <label for="prefsDisabledControls">Use icons for disabled controls?</label>
                         <input id="prefsDisabledControls" type="checkbox">
+                    </div>
+                    <div class="controlRow">
+                        <label for="prefsParagraphMarking">Mark paragraph</label>
+                        <select id="prefsParagraphMarking">
+                            <!-- Options are generated programmatically. -->
+                        </select>
+                    </div>
+                    <div class="controlRow">
+                        <label for="prefsReadRulerType">Reading ruler</label>
+                        <select id="prefsReadRulerType">
+                            <!-- Options are generated programmatically. -->
+                        </select>
                     </div>
                 </details>
                 <details name="preferenceCategory">

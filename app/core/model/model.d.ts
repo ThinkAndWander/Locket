@@ -1,3 +1,4 @@
+import { readRulerType, readSideHighlightType } from "../../GUI/consts"
 import { pronounSet } from "./placeholders"
 
 //#region headmate variables
@@ -479,6 +480,9 @@ export type log = {
 type themeName = { name: string }
 /** Provides the basic colors and contrast of base themes. */
 export type theme = themeName & {
+    /** This is the background under every other paragraph when enabled in accessibility. */
+    altParagraph: string
+
     /** Color of buttons, like fork links. */
     control: string
 
@@ -495,7 +499,7 @@ export type theme = themeName & {
     /** Color of interactive control text (defaults to the general text color). */
     controlText?: string
 
-    /** Color of the reading column. */
+    /** Color of the reading column (defaults to page). */
     column?: string
 
     /** Color of the focus rectangle applied to elements for keyboard navigation. */
@@ -561,8 +565,44 @@ export type allThemes = {
     unicorn: themeBasedOn
 }
 
-/** The settings a user would care about for display. */
+type ruler = { type: typeof readRulerType[number] }
+
+export interface rulerSideHighlightPrefs extends ruler {
+    type: 'Side highlight'
+
+    /** Defaults to the text color if not overridden. */
+    color?: string
+
+    /** False (default) is 0.2rem thickness. True is 0.1rem thickness. */
+    thin?: boolean
+
+    /** What to highlight, defaulting to the sidebar. "Side" makes a bar to the left of the paragraph, and "Body" adjusts the paragraph background color. */
+    highlight?: typeof readSideHighlightType
+}
+
+export interface rulerFollowPrefs extends ruler {
+    type: 'Ruler'
+
+    /** Defaults to the text color if not overridden. */
+    color?: string
+
+    /** How the ruler should highlight. */
+    blending?: string
+
+    /** The height, default 4rem. */
+    height?: string
+
+    /** If true, the ruler snaps to lines. */
+    snapping?: boolean
+} 
+
+/** The settings a user would care about for display.
+ * Note: when adding objects, adjust initPreferencesPage() in preferencesPage so settings revert properly. */
 export type displayPreferences = {
+    /** Usually about 50rem, which is a good mobile form factor + better for human vision than typical books. It helps
+     * reduce cognitive load, but can be set based on reader preferences. */
+    columnWidth?: string
+
     /** Arbitrary, app-wide user-defined CSS. Recomputes on apply theme. */
     customCSS?: string
 
@@ -572,43 +612,22 @@ export type displayPreferences = {
     /** Arbitrary app-wide custom JS. Runs in a try-catch. On error, comments out and saves, then reloads. */
     customJS?: string
 
+    /** Whether to run JS and HTML from the story (default on). Reasoning is, it's essential for many stories and as
+     * good for trust as any website, especially given the global privacy abuse history of websites. */
+    executeCodeAndHtml?: boolean
+
     /** The reading font family. It first resolves to a known bundled font name, since some apply additional styles,
      * and then if it doesn't match, it's treated as verbatim which may load dependent on the user having the font. */
     font?: string
 
-    /** Column content scaling (default 1.5). */
-    zoom?: number
-
-    /** Line height (default 1rem) increases spacing. */
-    lineHeight?: string
-
-    /** Margin between paragraphs (default 1rem) increases spacing. */
-    paragraphMargin?: string
+    /** A font-weight applied to all reading text, when set (default 400). */
+    fontWeight?: string
 
     /** Additional or negative spacing between each letter (default 0). */
     letterSpacing?: string
 
-    /** Additional or negative spacing between words (default 0). */
-    wordSpacing?: string
-
-    /** A font-weight applied to all reading text, when set (default 400). */
-    fontWeight?: string
-
-    /** Contrast from 20-200% (default 100%). Persists without effect if filter is defined. */
-    readFilterContrast?: number
-
-    /** Brightness from 30-200% (default 100%). Persists without effect if filter is defined. */
-    readFilterBrightness?: number
-
-    /** Saturation from 0-1000% (default 100%). Persists without effect if filter is defined. */
-    readFilterSaturate?: number
-
-    /** The hue from 0-360 degrees (default 0). 0=off, anything else does sepia(100%) + hue shift. Persists without
-     * effect if filter is defined. */
-    readFilterHue?: number
-
-    /** Opacity 0-100% (default 0%). The alpha of the overlay, before the body filter. */
-    overlayOpacity?: number
+    /** Line height (default 1rem) increases spacing. */
+    lineHeight?: string
 
     /** Color of the overlay (default black). This is a 6-digit hex color. Opacity converts to transparency. */
     overlayColor?: string
@@ -616,9 +635,36 @@ export type displayPreferences = {
     /** The mix-blend-mode of the overlay (default normal). This is any of the supported mixings. */
     overlayBlending?: string
 
-    /** Usually about 50rem, which is a good mobile form factor + better for human vision than typical books. It helps
-     * reduce cognitive load, but can be set based on reader preferences. */
-    columnWidth?: string
+    /** Opacity 0-100% (default 0%). The alpha of the overlay, before the body filter. */
+    overlayOpacity?: number
+
+    /** Margin between paragraphs (default 1rem) increases spacing. */
+    paragraphMargin?: string
+
+    /** A value in paragraphMarkings, consts.ts. Applies first-letter/first-line style on <p> for dyslexia help. */
+    paragraphStartStyle?: string
+
+    /** Brightness from 30-200% (default 100%). Persists without effect if filter is defined. */
+    readFilterBrightness?: number
+
+    /** Contrast from 20-200% (default 100%). Persists without effect if filter is defined. */
+    readFilterContrast?: number
+
+    /** The hue from 0-360 degrees (default 0). 0=off, anything else does sepia(100%) + hue shift. Persists without
+     * effect if filter is defined. */
+    readFilterHue?: number
+
+    /** Saturation from 0-1000% (default 100%). Persists without effect if filter is defined. */
+    readFilterSaturate?: number
+
+    /** An optional focus.
+     * Highlight: on hover or touch, identifies the paragraph the reader is on with a bar to the left and/or adjusting
+     * the background color under the paragraph.
+     * 
+     * Ruler: on hover or touch, sets or moves a reading ruler that sits over the text and masks either that area like
+     * a highlight, or everything else like a cut-out.
+    */
+    readRulerStyle?: rulerSideHighlightPrefs | rulerFollowPrefs
 
     /** Default on. Alt text of text is possible. This turns it off. */
     screenReaderAlting?: boolean
@@ -626,17 +672,10 @@ export type displayPreferences = {
     /** Default off. Disabled controls show 🛇 instead of graying out. */
     showDisabledStatus?: boolean
 
-    /** Whether to run JS and HTML from the story (default on). Reasoning is, it's essential for many stories and as
-     * good for trust as any website, especially given the global privacy abuse history of websites. */
-    executeCodeAndHtml?: boolean
+    /** Additional or negative spacing between words (default 0). */
+    wordSpacing?: string
 
-    /** Changes the background color of text segments on click. Helps with dyslexia. */
-    textHoverHighlight?: string
-
-    /** The font size of the first letter in a paragraph, in em units (1 = unchanged). Helps with dyslexia. */
-    paragraphStartingFontSize?: number
-
-    /** The color of the first letter in a paragraph. Helps with dyslexia. */
-    paragraphStartingColor?: string
+    /** Column content scaling (default 1.5). */
+    zoom?: number
 }
 //#endregion

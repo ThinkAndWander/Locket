@@ -1,6 +1,6 @@
 import { allThemes, dynamicTheme, theme, themeBase, themeBasedOn } from "../core/model/model"
 import { storage, saveToLocalStorage } from "../core/persistence"
-import { bundleFontList } from "./consts"
+import { bundleFontList, paragraphMarkings } from "./consts"
 
 let everInitTheme = false
 let _themeStyles: HTMLStyleElement | undefined // Reference held to a dynamic stylesheet.
@@ -25,6 +25,7 @@ export const themes: allThemes = {
     light: {
         name: "Light",
         page: "rgb(245, 245, 245)",
+        altParagraph: "rgb(245, 245, 245)",
         text: "rgb(17, 17, 17)",
         control: "rgb(182, 182, 182)",
         controlFocus: "rgb(224, 224, 224)",
@@ -37,6 +38,7 @@ export const themes: allThemes = {
     lowContrastLight: {
         name: "Light Low Contrast",
         page: "rgb(198, 198, 181)",
+        altParagraph: "rgb(198, 198, 181)",
         text: "rgb(99, 99, 99)",
         control: "rgb(150, 150, 150)",
         controlFocus: "rgb(200, 200, 200)",
@@ -49,6 +51,7 @@ export const themes: allThemes = {
     highContrastLight: {
         name: "Light High Contrast",
         page: "white",
+        altParagraph: "white",
         text: "black",
         control: "rgb(0, 0, 128)",
         controlFocus: "rgb(34, 34, 34)",
@@ -62,6 +65,7 @@ export const themes: allThemes = {
     blackOnWhite: {
         name: "Black on White",
         page: "white",
+        altParagraph: "p:nth-child(2n) { background: black; color: white; } p:nth-child(2n) button { filter: invert(); }",
         text: "black",
         control: "black",
         controlFocus: "rgb(34, 34, 34)",
@@ -74,6 +78,7 @@ export const themes: allThemes = {
     dark: {
         name: "Dark",
         page: "rgb(32, 32, 32)",
+        altParagraph: "black",
         text: "rgb(255, 255, 250)",
         control: "rgb(226, 226, 226)",
         controlFocus: "rgb(245, 245, 245)",
@@ -87,6 +92,7 @@ export const themes: allThemes = {
     lowContrastDark: {
         name: "Dark Low Contrast",
         page: "rgb(41, 41, 41)",
+        altParagraph: "rgb(41, 41, 41)",
         text: "rgb(120, 120, 120)",
         control: "rgb(103, 103, 103)",
         controlText: "rgb(15, 15, 15)",
@@ -100,6 +106,7 @@ export const themes: allThemes = {
     highContrastDark: {
         name: "Dark High Contrast",
         page: "black",
+        altParagraph: "black",
         text: "white",
         control: "white",
         controlFocus: "rgb(240, 240, 240)",
@@ -110,10 +117,11 @@ export const themes: allThemes = {
         link: "rgb(138, 228, 255)",
         linkVisited: "rgb(255, 186, 244)",
     },
-    whiteOnBlack: { // White text, black background
+    whiteOnBlack: { // Hard on users with astigmatisms
         name: "White on Black",
         page: "black",
-        text: "white",  // May affect astigmatic users
+        altParagraph: "p:nth-child(2n) { background: white; color: black; } p:nth-child(2n) button { filter: invert(); }",
+        text: "white", 
         control: "white",
         controlFocus: "rgb(240, 240, 240)",
         controlText: "black",
@@ -125,6 +133,7 @@ export const themes: allThemes = {
     forcedColors: { // Forced-color compat
         name: "System",
         page: "Canvas",
+        altParagraph: "Canvas",
         text: "CanvasText",
         control: "ButtonFace",
         controlDisabled: "ButtonFace",
@@ -138,8 +147,8 @@ export const themes: allThemes = {
     },
     simpleLight: {
         name: "Simple Light",
-
         page: "rgb(231, 231, 231)",
+        altParagraph: "rgb(231, 231, 231)",
         text: "rgb(40, 40, 40)",
         control: "transparent",
         controlFocus: "white",
@@ -152,6 +161,7 @@ export const themes: allThemes = {
     simpleDark: {
         name: "Simple Dark",
         page: "rgb(40, 40, 40)",
+        altParagraph: "rgb(40, 40, 40)",
         text: "rgb(231, 231, 231)",
         control: "transparent",
         controlFocus: "black",
@@ -164,6 +174,7 @@ export const themes: allThemes = {
     ocean: {
         name: "Ocean",
         page: "rgb(34, 34, 102)",
+        altParagraph: "rgb(34, 34, 102)",
         text: "rgb(252, 252, 224)",
         control: "rgb(167, 213, 176)",
         controlFocus: "rgb(212, 255, 220)",
@@ -177,6 +188,7 @@ export const themes: allThemes = {
     dandelion: {
         name: "Dandelion",
         page: "linear-gradient(rgb(255, 202, 176) 0%, rgb(222, 210, 150) 100%)",
+        altParagraph: "rgb(238, 206, 162)",
         text: "rgb(40, 40, 0)",
         control: "rgb(255, 235, 170)",
         controlFocus: "rgb(255, 251, 223)",
@@ -191,6 +203,7 @@ export const themes: allThemes = {
         name: "Candle",
         base: themeBase.Light,
         page: "radial-gradient(circle, #ffecd2 0%, #fcc69f 100%);",
+        altParagraph: "rgb(253, 216, 184)",
         control: "rgb(255, 239, 174)",
         controlFocus: "white",
         column: "rgba(217, 218, 195, 0.53)"
@@ -199,6 +212,7 @@ export const themes: allThemes = {
         name: "Midnight",
         base: themeBase.Dark,
         page: "linear-gradient(rgb(15, 12, 41) 0%, rgb(48, 43, 99) 50%, rgb(36, 36, 62) 100%)",
+        altParagraph: "black",
         themeCSS: [
             `#mainColumn,
              #preferences {
@@ -211,6 +225,7 @@ export const themes: allThemes = {
         name: "Matrix",
         base: themeBase.Light,
         page: "rgb(54, 54, 54)",
+        altParagraph: "rgb(54, 54, 54)",
         text: "rgb(127, 255, 55)",
         control: "rgb(8, 48, 0)",
         controlFocus: "rgb(16, 94, 0)",
@@ -235,6 +250,7 @@ export const themes: allThemes = {
         focusBorder: "rgb(255, 183, 183)",
         column: "rgba(249, 254, 255, 0.5)",
         page: "linear-gradient(90deg, #e0eafc 0%, #cfdef3 80%, #dfdef3 82%, #dfdef3 87%, #cfdef3 96%, #e0eafc 100%);",
+        altParagraph: "rgb(224, 234, 252)",
     },
     strawberry: {
         name: "Strawberry",
@@ -244,6 +260,7 @@ export const themes: allThemes = {
         column: "rgba(223, 201, 245, 0.87)",
         header: "rgb(255, 215, 215)",
         page: `rgb(207, 222, 243) ${patterns.dots('44px', 'rgba(255, 0, 255, 0.22)')}`,
+        altParagraph: "rgb(231, 110, 249)",
         themeCSS: [
             `#mainColumn,
              #preferences {
@@ -265,6 +282,7 @@ export const themes: allThemes = {
         get: () => ({
             base: themeBase.Dark,
             page: "linear-gradient(0deg, rgb(172, 112, 145) 0%,rgb(151, 86, 142) 100%)",
+            altParagraph: "rgb(161, 98, 143)",
             text: "rgb(254, 220, 255)",
             control: "transparent",
             controlFocus: "transparent",
@@ -297,6 +315,7 @@ export const themes: allThemes = {
         header: "linear-gradient(rgb(205, 228, 242) 0%, rgb(126, 191, 231) 98%, black)",
         column: "white",
         page: "linear-gradient(to bottom, aliceblue, rgb(255, 231, 231), rgb(255, 214, 184))",
+        altParagraph: "rgb(255, 222, 207)",
         themeCSS: [`
             #headerBar button {
                 background: white;
@@ -412,6 +431,24 @@ export function applyTheme(givenTheme?: theme): void {
         resolvedFontData = `${bundleFontList[index][1]}|`.split('|', 2)
     }
 
+    // Resolves the paragraph starting style.
+    const pStyle = storage.display.paragraphStartStyle as typeof paragraphMarkings[number]
+    const resolvedParagraphStyle = 
+        pStyle === 'Alternating background' && css.altParagraph.includes('{') ? css.altParagraph
+        : pStyle === 'Alternating background' ? `p:nth-child(2n) { background: color-mix(${css.altParagraph}, contrast-color(${css.altParagraph}) 10%); }`
+        : pStyle === 'Alternating indent' ? `p:nth-child(2n) { padding-left: 0.5rem; }`
+        : pStyle === 'Big 1st letter' ? `p::first-letter { font-size: 1.2em; }`
+        : pStyle === 'Big 1st line' ? `p::first-line { font-size: 1.1em; }`
+        : pStyle === 'Color 1st letter' ? `p::first-letter { color: color-mix(${css.text}, ${css.focusBorder} 70%); }`
+        : pStyle === 'Color 1st line' ? `p::first-line { color: color-mix(${css.text}, ${css.focusBorder} 40%); }`
+        : pStyle === 'Bold 1st letter' ? `p::first-letter { font-weight: bolder; }`
+        : pStyle === 'Bold 1st line' ? `p::first-line { font-weight: bolder; }`
+        : pStyle === 'Highlight 1st letter' ? `p::first-letter { background: color-mix(${css.column ?? css.page}, ${css.link} 30%); }`
+        : pStyle === 'Highlight 1st line' ? `p::first-line { background: color-mix(${css.column ?? css.page}, ${css.link} 30%); }`
+        : pStyle === 'Underline 1st letter' ? `p::first-letter { text-decoration: underline 0.1rem color-mix(${css.text}, ${css.focusBorder} 70%); }`
+        : pStyle === 'Underline 1st line' ? `p::first-line { text-decoration: underline 0.1rem color-mix(${css.text}, ${css.focusBorder} 70%); }`
+        : pStyle satisfies 'None'
+
     // It's easy to forget semi-colons here and hard to debug, fair warning.
     const rules: string[] = [
         ...((css as themeBasedOn).themeCSS ? (css as themeBasedOn).themeCSS! : []),
@@ -461,6 +498,10 @@ export function applyTheme(givenTheme?: theme): void {
             ${storage.display.letterSpacing
                 ? `letter-spacing: ${storage.display.letterSpacing};`
                 : ''}
+            ${storage.display.fontWeight
+                ? `font-weight: ${storage.display.fontWeight};`
+                : ''}
+            ${resolvedParagraphStyle ?? ''}
         }
         `, `
         body {

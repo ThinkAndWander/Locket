@@ -1,5 +1,4 @@
 import { allThemes, displayPreferences, milestone } from "./model/model"
-import { deepMergeInto } from "./utils"
 
 // Use only one storage key to avoid ever creating fragments from coding mistakes.
 const _localStorageKey = 'LocketGame'
@@ -18,15 +17,14 @@ export type storageData = {
   milestones: milestone[]
 }
 
-/** A record of storage data changes in this session, to power undo/redo. */
-let _storageHistory: Partial<storageData[]>
-
-/** Tracks location in redo history. */
-let _storageHistoryIndex: number
-
 /** This is called in start.ts, filling in defaults and is safe to use immediately. Do not reassign. Anything depending
  * on value changes here should coordinate with a function so they can receive updates. */
 export let storage: storageData
+
+/** Changes the storage to the given arbitrary data, with defaults filled in. */
+export function overwritePreferences(data: Partial<storageData>) {
+  storage = _fillDefaults(data)
+}
 
 /** Combines a partial local storage copy to fill in with current loaded data, else defaults. */
 function _fillDefaults(storage: Partial<storageData>): storageData {
@@ -56,12 +54,4 @@ export function loadFromLocalStorage(): void {
 
   try { storage = _fillDefaults(JSON.parse(json ?? '{}') as Partial<storageData>) } 
   catch { storage = _fillDefaults({}) }
-}
-
-export function recordChange(changes: Partial<storageData>): void {
-  deepMergeInto(storage, changes)
-}
-
-export function redo(changes: Partial<storageData>): void {
-  deepMergeInto(storage, changes)
 }
