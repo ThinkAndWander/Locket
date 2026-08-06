@@ -1,4 +1,4 @@
-import { readRulerType, readSideHighlightType } from "../../GUI/consts"
+import { paragraphBorders, paragraphMarkings, readFocusBehaviorHighlight, readFocusBehaviorRuler, readFocusRulerWhen, readingFocuses } from "../../GUI/consts"
 import { pronounSet } from "./placeholders"
 
 //#region headmate variables
@@ -480,14 +480,11 @@ export type log = {
 type themeName = { name: string }
 /** Provides the basic colors and contrast of base themes. */
 export type theme = themeName & {
-    /** This is the background under every other paragraph when enabled in accessibility. */
-    altParagraph: string
-
     /** Color of buttons, like fork links. */
     control: string
 
     /** Color of interactive controls when disabled (defaults to non-disabled look). Note usually it's not provided
-     * because we prefer to use the 🛇 symbol for active accessibility. Current patterns are not good enough. */
+     * because we prefer to use the 🛇 symbol for active accessibility. The trending patterns are not good enough. */
     controlDisabled?: string
 
     /** Color of interactive control text when disabled. Usually not provided. */
@@ -510,6 +507,10 @@ export type theme = themeName & {
 
     /** Color of the screen. */
     page: string
+
+    /** This is used by accessibility tools for minor highlights in a color similar to the page when enabled in
+     * accessibility. */
+    pageHighlight: string
 
     /** Color of most text. */
     text: string
@@ -536,6 +537,8 @@ type themeBasedOn = Partial<theme> & themeName & {
     themeCSS?: string[]
 }
 
+/** A dynamic theme is a regular theme that computes every time it's needed instead of being static, allowing it to
+ * access variables to compute colors and values. When possible, write static themes instead. */
 type dynamicTheme = {
     name: string,
     get: () => Omit<theme | themeBasedOn, 'name'>
@@ -565,36 +568,37 @@ export type allThemes = {
     unicorn: themeBasedOn
 }
 
-type ruler = { type: typeof readRulerType[number] }
+type readingFocus = {
+    type: typeof readingFocuses[number]
 
-export interface rulerSideHighlightPrefs extends ruler {
-    type: 'Side highlight'
-
-    /** Defaults to the text color if not overridden. */
+    /** Color of the sidebar or ruler (defaults to aqua as it works well for both sidebar/ruler on light and dark mode). */
     color?: string
 
-    /** False (default) is 0.2rem thickness. True is 0.1rem thickness. */
-    thin?: boolean
+    /** Opacity of the color (default 25%). Separate since OS color picker can omit opacity, and for named colors. */
+    opacity?: number
 
-    /** What to highlight, defaulting to the sidebar. "Side" makes a bar to the left of the paragraph, and "Body" adjusts the paragraph background color. */
-    highlight?: typeof readSideHighlightType
+    /** Thin or thick sidebar highlight, or the height of the ruler (default 4rem), usually in multiples of 1rem to
+     * match up with # lines of text. */
+    size?: string
 }
 
-export interface rulerFollowPrefs extends ruler {
+export interface readFocusHighlight extends readingFocus {
+    type: 'Highlight'
+
+    /** What to highlight, defaulting to the sidebar. "Side" makes a bar to the left of the paragraph, and "Body" adjusts the paragraph background color. */
+    behavior?: typeof readFocusBehaviorHighlight[number]
+}
+
+export interface readFocusRuler extends readingFocus {
     type: 'Ruler'
 
-    /** Defaults to the text color if not overridden. */
-    color?: string
+    /** If true, the inside is plain and a border is used instead. */
+    behavior?: typeof readFocusBehaviorRuler[number]
 
-    /** How the ruler should highlight. */
-    blending?: string
-
-    /** The height, default 4rem. */
-    height?: string
-
-    /** If true, the ruler snaps to lines. */
-    snapping?: boolean
-} 
+    /** When the focus ruler responds. Tap: moves on pointer device primary button. Drag: moves when pointer device is
+     * in motion after clicking and before releasing. Hover: moves on hovering the pointer device over the screen. */
+    controls?: typeof readFocusRulerWhen[number]
+}
 
 /** The settings a user would care about for display.
  * Note: when adding objects, adjust initPreferencesPage() in preferencesPage so settings revert properly. */
@@ -641,8 +645,11 @@ export type displayPreferences = {
     /** Margin between paragraphs (default 1rem) increases spacing. */
     paragraphMargin?: string
 
-    /** A value in paragraphMarkings, consts.ts. Applies first-letter/first-line style on <p> for dyslexia help. */
-    paragraphStartStyle?: string
+    /** A value in paragraphMarkings, consts.ts. An alternating or first-letter/line style on <p> for dyslexia. */
+    paragraphMarking?: typeof paragraphMarkings[number]
+
+    /** A value in paragraphBorder, consts.ts. Applies a border around paragraphs at all times or when hovered. */
+    paragraphBorder?: typeof paragraphBorders[number]
 
     /** Brightness from 30-200% (default 100%). Persists without effect if filter is defined. */
     readFilterBrightness?: number
@@ -664,7 +671,7 @@ export type displayPreferences = {
      * Ruler: on hover or touch, sets or moves a reading ruler that sits over the text and masks either that area like
      * a highlight, or everything else like a cut-out.
     */
-    readRulerStyle?: rulerSideHighlightPrefs | rulerFollowPrefs
+    readingFocus?: readFocusHighlight | readFocusRuler
 
     /** Default on. Alt text of text is possible. This turns it off. */
     screenReaderAlting?: boolean
@@ -675,7 +682,7 @@ export type displayPreferences = {
     /** Additional or negative spacing between words (default 0). */
     wordSpacing?: string
 
-    /** Column content scaling (default 1.5). */
+    /** Column content scaling (default defined by defaultZoom in consts.ts). */
     zoom?: number
 }
 //#endregion

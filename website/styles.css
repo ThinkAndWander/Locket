@@ -106,10 +106,6 @@ body {
     margin-top: 0;
 }
 
-#headerBar {
-    z-index: 1; /* Above reading focus ruler */
-}
-
 #page {
     display: flex;
     flex-flow: column;
@@ -132,7 +128,8 @@ button:not(:disabled) {
 button:disabled,
 select:disabled,
 input:disabled,
-textarea:disabled {
+textarea:disabled,
+input[type="checkbox"]:disabled {
     cursor: not-allowed;
     border: none;
     outline: none;
@@ -140,7 +137,9 @@ textarea:disabled {
 
 button,
 select,
-input[type="number"] {
+input[type="number"],
+input::placeholder,
+textarea::placeholder {
     font-size: 1rem; /* Firefox (Linux) needs this */
 }
 
@@ -181,10 +180,11 @@ textarea {
     min-height: 4rem;
 }
 
-#readRuler {
+#readRuler,
+#readRulerAbove,
+#readRulerBelow {
     position: absolute;
     width: 100%;
-    height: 2rem;
     display: block;
     pointer-events: none;
 }
@@ -229,7 +229,7 @@ textarea {
 #rightGutter {
     flex-grow: 1;
     pointer-events: none;
-    z-index: 2; /* Above reading ruler and header. Required to affect disabled controls. */
+    z-index: 1; /* Required for theme tint to cover the text of disabled controls. */
 }
 
 /* A way to tint any theme that also affects page gutters. */
@@ -238,7 +238,7 @@ textarea {
     pointer-events: none;
     position: absolute;
     width: 100%;
-    z-index: 2; /* Above reading ruler and header. Required to affect disabled controls. */
+    z-index: 1; /* Required for theme tint to cover the text of disabled controls. */
 }
 
 /* The reading column and input box together. */
@@ -254,21 +254,33 @@ textarea {
         margin: 0.4rem;
     }
 
+    & summary,
+    & button {
+        min-width: fit-content;
+    }
+
     & .controlRow {
-        margin-top: 0.75rem;
-        margin-bottom: 0.75rem;
         display: flex;
-        align-items: center;
+        flex-direction: column;
+        margin-bottom: 0.75rem;
+        margin-top: 0.75rem;
         /* We highlight controlRow for checkboxes to clarify the space between is clickable, since browsers do
         this, but we don't want it to misinform the user where that interactive area extends, so shrink to fit. */
         width: fit-content;
     }
 
+    /* Checkboxes are in-line */
+    & .controlRow.inline {
+        align-items: center;
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
     /* When controlRow is highlighted for checkboxes, use a pointer like any button. Because this is automatic,
     browsers really should do it themselves. */
-    & .controlRow:has(> input[type="checkbox"]):hover,
-    & label:has(+ input[type="checkbox"]):hover,
-    & input[type="checkbox"]:hover {
+    & .controlRow:has(> input[type="checkbox"]:not(:disabled)):hover,
+    & label:has(+ input[type="checkbox"]:not(:disabled)):hover,
+    & input[type="checkbox"]:not(:disabled):hover {
         cursor: pointer;
     }
     
@@ -323,6 +335,7 @@ textarea {
         margin: 0;
         text-align: left;
     }
+
     /** This crazy line hides the tray results if nothing in the tray has focus, nor the textbox. It avoids some
     slow javascript workarounds since onfocusout is *also* not browser-stable, but this is. Nifty! */
     .suggestableInputContainer:not(:focus-within):not(:has(input[type='text']:focus)) .suggestableInputTray {

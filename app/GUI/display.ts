@@ -1,9 +1,15 @@
 import { storage } from "../core/persistence"
+import { defaultZoom } from "./consts"
 import { applyDisplayPreferences, initPreferencesPage, togglePreferences } from "./preferencesPage"
 
 let _out: HTMLElement // Output region.
 let _in: HTMLTextAreaElement // Input textbox.
-let _readingRuler: HTMLDivElement // An optional reading ruler over the output.
+
+// The reading ruler and above/below for its cut-out mode, if used, and positioned in main column.
+let _readingFocusRuler: HTMLDivElement
+let _readingRulerAbove: HTMLDivElement
+let _readingRulerBelow: HTMLDivElement
+let _mainColumn: HTMLDivElement
 
 /** Subscribers to input submission. */
 let _onInputSubmitted: ((input: string) => void)[] = []
@@ -28,7 +34,10 @@ export function initDisplay(): void {
     _in = document.getElementById('inputArea') as HTMLTextAreaElement
     _in.addEventListener('keydown', (kbEvent) => _onInputKey(kbEvent))
 
-    _readingRuler = document.getElementById('readRuler') as HTMLDivElement
+    _readingFocusRuler = document.getElementById('readRuler') as HTMLDivElement
+    _readingRulerAbove = document.getElementById('readRulerAbove') as HTMLDivElement
+    _readingRulerBelow = document.getElementById('readRulerBelow') as HTMLDivElement
+    _mainColumn = document.getElementById('mainColumn') as HTMLDivElement
 
     _initHeaderBar()
     initPreferencesPage()
@@ -36,15 +45,15 @@ export function initDisplay(): void {
     hideInput() // Hide by default.
     togglePreferences(false) // Hide the preferences page.
     applyDisplayPreferences()
-    _adjustReadRuler() // Hide or show read ruler by default.
+    _adjustReadRuler()
 }
 
 /** Sets up all buttons on the header. */
 function _initHeaderBar(): void {
     const headerSettings = document.getElementById('headerSettings') as HTMLButtonElement
     headerSettings.addEventListener('click', () => {
+        _adjustReadRuler() // Before toggle prefs so it can get hidden.
         togglePreferences()
-        _adjustReadRuler()
     })
 }
 
@@ -84,28 +93,62 @@ export function clearInputListeners(): void {
     _onInputSubmitted = []
 }
 
-/** Sets the reading ruler's hidden status or not, de/registering event listeners. */
+/** If used, moves the reading ruler according to chosen controls. Also adjusts its display. */
 function _adjustReadRuler(): void {
-    document.body.removeEventListener('mousemove', _updateReadRulerPos)
+    document.body.removeEventListener('mouseup', _updateReadRulerOnTap)
+    document.body.removeEventListener('mousemove', _updateReadRulerOnDragHover)
 
-    if (storage.display.readRulerStyle?.type === 'Ruler') {
-        _readingRuler.style.backgroundColor = 'rgba(255, 255, 0, 0.25)' // TODO
-        _readingRuler.style.height = `calc(${storage.display.readRulerStyle.height ?? 4}rem * ${storage.display.zoom ?? 1})`
-        _readingRuler.style.display = ''
-        document.body.addEventListener('mousemove', _updateReadRulerPos)
+    if (storage.display.readingFocus?.type === 'Ruler') {
+        const colorOutside = storage.display.readingFocus.behavior === 'Color outside'
+        _readingFocusRuler.style.display = ''
+        _readingRulerAbove.style.display = colorOutside ? '' : 'none'
+        _readingRulerBelow.style.display = colorOutside ? '' : 'none'
+        _readingFocusRuler.style.visibility = colorOutside ? 'hidden' : 'visible'
+        _readingFocusRuler.style.height = `calc(${storage.display.readingFocus.size ?? '4rem'} * ${storage.display.zoom ?? defaultZoom()})`
+
+        if (storage.display.readingFocus.controls) {
+            document.body.addEventListener('mouseup', _updateReadRulerOnTap)
+        }
+        if (!storage.display.readingFocus.controls ||
+            storage.display.readingFocus.controls === 'Move on tap and drag' ||
+            storage.display.readingFocus.controls === 'Move on tap, drag, and hover')
+        {
+            document.body.addEventListener('mousemove', _updateReadRulerOnDragHover)
+        }
     } else {
-        _readingRuler.style.display = 'none'
+        _readingFocusRuler.style.display = 'none'
     }
 }
 
-/** Moves the reading ruler to the mouse, offset such that it hangs under the mouse at the top of the document and
- * above the mouse at the bottom. */
-function _updateReadRulerPos(ev: MouseEvent): void {
-    // Pos is mouse position. ScrollPos factors in the scrollbar so it stays in the right space
-    // as you scroll. Offset interpolates along the length of the body to change the origin, subtly shifting
-    // the pointing device so that it's aligned to the bottom at the bottom, and top at the top. That's why it
-    // multiplies by the height of 2rem.
-    const pos = ev.clientY + window.scrollY
-    const interpolatedOffset = (pos / document.body.clientHeight)
-    _readingRuler.style.top = `calc(${pos}px - ${interpolatedOffset} * ${_readingRuler.clientHeight}px)`
+function _updateReadRulerOnTap(ev: MouseEvent): void { _updateReadRulerPos(ev, true) }
+function _updateReadRulerOnDragHover(ev: MouseEvent): void { _updateReadRulerPos(ev, false) }
+
+/** Centers the reading ruler on the mouse, clamped to the output area bounds. */
+function _updateReadRulerPos(ev: MouseEvent, isTap: boolean): void {
+    if (storage.display.readingFocus?.type === 'Ruler'
+        && storage.display.readingFocus.controls === 'Move on tap and drag'
+        && ev.buttons === 0 && !isTap)
+    {
+        return
+    }
+
+    const mainBounds = _mainColumn.getBoundingClientRect()
+    const mainTop = mainBounds.top ?? 0
+    const mainHeight = mainBounds.height ?? 0
+    _readingFocusRuler.style.top = `clamp(
+        ${mainTop}px,
+        ${ev.clientY + window.scrollY - _readingFocusRuler.clientHeight / 2}px,
+        calc(100% - ${_readingFocusRuler.clientHeight}px))`
+
+    if (storage.display.readingFocus?.type === 'Ruler') {
+        if (storage.display.readingFocus.behavior === 'Color outside') {
+            const start = ev.clientY + window.scrollY + _readingFocusRuler.clientHeight / 2
+            _readingRulerAbove.style.top = `${mainTop + window.scrollY}px`
+            _readingRulerAbove.style.height = `min(
+                ${mainHeight - _readingFocusRuler.clientHeight}px,
+                ${Math.max(0, ev.clientY - mainTop - _readingFocusRuler.clientHeight / 2)}px)`
+            _readingRulerBelow.style.height = `calc(100% - ${Math.max(start, mainTop)}px)`
+            _readingRulerBelow.style.top = `${Math.max(start, mainTop)}px`
+        }
+    }
 }

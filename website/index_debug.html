@@ -22,7 +22,7 @@
         <link rel="apple-touch-icon" href="/icons/icon-180x180.png">
         <link rel="icon" href="/icons/icon-192x192.png" type="image/png" sizes="192x192">
         <link rel="icon" href="/icons/icon-512x512.png" type="image/png" sizes="512x512">
-        <title>Locket text adventure, in opening sequence</title>
+        <title>Locket</title>
         
         <!-- OG (Open Graph) tags control social media embeds + support various 3rd-party tools, e.g. Instaparser -->
         <meta property="og:type" content="website">
@@ -44,7 +44,9 @@
         <div id="leftGutter"></div> <!-- Usually empty and used only for filter styles. -->
         <div id="page">
             <div id="overlay"></div> <!-- Used to reduce contrast or add colored light for reading. -->
+            <div id="readRulerAbove"></div>
             <div id="readRuler"></div> <!-- Used to follow the reader's pointing device to help them see their place. -->
+            <div id="readRulerBelow"></div>
             <header id="headerBar">
                 <button id="headerSettings">Settings</button>
             </header>
@@ -54,16 +56,14 @@
             </main>
             <div id="preferences">
                 <h1>Preferences</h1>
-                <p>Reading preferences that affect the story.</p>
+                <p>Reading and gameplay preferences. Saves automatically.</p>
                 <details name="preferenceCategory">
-                    <summary><h2>View and Typography</h2></summary>
-                    <div class="controlRow">
-                        <fieldset>
-                            <legend>Zoom (delayed preview)</legend>
-                            <input id="prefsZoom" type="range" min="0.8" max="4" value="1.5" step="0.1">
-                            <input id="prefsZoomNum" type="number" min="0.8" max="4" value="1.5" step="0.1">
-                        </fieldset>
-                    </div>
+                    <summary><h2>View and typography</h2></summary>
+                    <fieldset class="controlRow">
+                        <legend>Zoom (delayed preview)</legend>
+                        <input id="prefsZoom" type="range" min="0.8" max="4" value="1.5" step="0.1">
+                        <input id="prefsZoomNum" type="number" min="0.8" max="4" value="1.5" step="0.1">
+                    </fieldset>
                     <p>Choose an included font or type one in that will load if it's on your device.</p>
                     <div class="controlRow">
                         <label for="prefsIncludedFonts">Font</label>
@@ -74,8 +74,8 @@
                     </div>
                     <p>Boldings except "Default" and "Bold" need a variable font, like Noto Serif</p>
                     <div class="controlRow">
-                        <label for="prefsAlwaysBold">Font Bolding</label>
-                        <select id="prefsAlwaysBold">
+                        <label for="prefsFontBolding">Font bolding</label>
+                        <select id="prefsFontBolding">
                             <!-- Options are generated programmatically. -->
                         </select>
                     </div>
@@ -112,20 +112,53 @@
                 </details>
                 <details name="preferenceCategory">
                     <summary><h2>Accessibility</h2></summary>
-                    <div class="controlRow">
+                    <div class="controlRow inline">
                         <label for="prefsDisabledControls">Use icons for disabled controls?</label>
                         <input id="prefsDisabledControls" type="checkbox">
                     </div>
                     <div class="controlRow">
-                        <label for="prefsParagraphMarking">Mark paragraph</label>
+                        <label for="prefsParagraphMarking">Paragraph marking</label>
                         <select id="prefsParagraphMarking">
                             <!-- Options are generated programmatically. -->
                         </select>
                     </div>
                     <div class="controlRow">
-                        <label for="prefsReadRulerType">Reading ruler</label>
-                        <select id="prefsReadRulerType">
+                        <label for="prefsParagraphBorder">Paragraph border</label>
+                        <select id="prefsParagraphBorder">
                             <!-- Options are generated programmatically. -->
+                        </select>
+                    </div>
+                    <div class="controlRow">
+                        <label for="prefsReadingFocus">Reading focus</label>
+                        <select id="prefsReadingFocus">
+                            <!-- Options are generated programmatically. -->
+                        </select>
+                    </div>
+                    <div class="controlRow">
+                        <label for="prefsFocusBehavior">Behavior</label>
+                        <select id="prefsFocusBehavior">
+                            <!-- Options are generated programmatically and differ with the reading focus. -->
+                        </select>
+                    </div>
+                    <div class="controlRow">
+                        <label for="prefsFocusSize">Size</label>
+                        <select id="prefsFocusSize">
+                            <!-- Options are generated programmatically and differ with the reading focus. -->
+                        </select>
+                    </div>
+                    <div class="controlRow">
+                        <label for="prefsFocusColor">Focus color</label>
+                        <input id="prefsFocusColor" type="color" value="#00ffff">
+                    </div>
+                    <fieldset class="controlRow">
+                        <legend>Color opacity</legend>
+                        <input id="prefsFocusOpacity" type="range" min="0" max="100" value="0">
+                        <input id="prefsFocusOpacityNum" type="number" min="0" max="100" value="0">
+                    </fieldset>
+                    <div class="controlRow">
+                        <label for="prefsFocusRulerControls">Ruler controls</label>
+                        <select id="prefsFocusRulerControls">
+                            <!-- Options are generated programmatically and differ with the reading focus. -->
                         </select>
                     </div>
                 </details>
@@ -137,34 +170,26 @@
                             <!-- Options are generated programmatically. -->
                         </select>
                     </div>
-                    <div class="controlRow">
-                        <fieldset>
-                            <legend>Contrast</legend>
-                            <input id="prefsFilterContrast" type="range" min="20" max="200" value="100">
-                            <input id="prefsFilterContrastNum" type="number" min="20" max="200" value="100">
-                        </fieldset>
-                    </div>
-                    <div class="controlRow">
-                        <fieldset>
-                            <legend>Brightness</legend>
-                            <input id="prefsFilterBrightness" type="range" min="30" max="200" value="100">
-                            <input id="prefsFilterBrightnessNum" type="number" min="30" max="200" value="100">
-                        </fieldset>
-                    </div>
-                    <div class="controlRow">
-                        <fieldset>
-                            <legend>Saturation</legend>
-                            <input id="prefsFilterSaturation" type="range" min="0" max="1000" value="100">
-                            <input id="prefsFilterSaturationNum" type="number" min="0" max="1000" value="100">
-                        </fieldset>
-                    </div>
-                    <div class="controlRow">
-                        <fieldset>
-                            <legend>Hue</legend>
-                            <input id="prefsFilterHue" type="range" min="0" max="360" value="0">
-                            <input id="prefsFilterHueNum" type="number" min="0" max="360" value="0">
-                        </fieldset>
-                    </div>
+                    <fieldset class="controlRow">
+                        <legend>Contrast</legend>
+                        <input id="prefsFilterContrast" type="range" min="20" max="200" value="100">
+                        <input id="prefsFilterContrastNum" type="number" min="20" max="200" value="100">
+                    </fieldset>
+                    <fieldset class="controlRow">
+                        <legend>Brightness</legend>
+                        <input id="prefsFilterBrightness" type="range" min="30" max="200" value="100">
+                        <input id="prefsFilterBrightnessNum" type="number" min="30" max="200" value="100">
+                    </fieldset>
+                    <fieldset class="controlRow">
+                        <legend>Saturation</legend>
+                        <input id="prefsFilterSaturation" type="range" min="0" max="1000" value="100">
+                        <input id="prefsFilterSaturationNum" type="number" min="0" max="1000" value="100">
+                    </fieldset>
+                    <fieldset class="controlRow">
+                        <legend>Hue</legend>
+                        <input id="prefsFilterHue" type="range" min="0" max="360" value="0">
+                        <input id="prefsFilterHueNum" type="number" min="0" max="360" value="0">
+                    </fieldset>
                     <p>You may use the following
                         <a aria-label="Reference for CSS filters on MDN" href="https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/Properties/filter#syntax">filter CSS</a>
                         to fine-tune.</p>
@@ -172,13 +197,13 @@
                     <textarea id="prefsCustomFilter" spellcheck="false"></textarea>
                 </details>
                 <details name="preferenceCategory">
-                    <summary><h2>Theme Tint</h2></summary>
+                    <summary><h2>Theme tint</h2></summary>
                     <div class="controlRow">
-                        <label for="prefsTint">Tint Color</label>
+                        <label for="prefsTint">Tint color</label>
                         <input id="prefsTint" type="color" value="rgb(82, 132, 248)">
                     </div>
                     <div class="controlRow">
-                        <label for="prefsTintOpacity prefsTintOpacityNum">Tint Intensity</label>
+                        <label for="prefsTintOpacity prefsTintOpacityNum">Tint intensity</label>
                         <input id="prefsTintOpacity" type="range" min="0" max="90" value="0">
                         <input id="prefsTintOpacityNum" type="number" min="0" max="90" value="0">
                     </div>
@@ -201,12 +226,12 @@
                 <details name="preferenceCategory">
                     <summary><h2>Miscellaneous</h2></summary>
                     <p>Disabling code in stories may break them.</p>
-                    <div class="controlRow">
+                    <div class="controlRow inline">
                         <label for="prefsRunCode">Allow story code?</label>
                         <input id="prefsRunCode" type="checkbox">
                     </div>
                 </details>
-                <div class="controlRow">
+                <div class="controlRow inline">
                     <button id="prefsDone">Apply</button>
                     <button id="prefsUndo" disabled>Undo</button>
                     <button id="prefsRestore" disabled>Restore all</button>

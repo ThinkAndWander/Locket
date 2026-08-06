@@ -1,24 +1,11 @@
-import { allThemes } from "../core/model/model"
-import { storage, saveToLocalStorage, storageData, overwritePreferences } from "../core/persistence"
-import { boldLevels, bundleFontList, columnWidths, knownFontNames, letterSpacings, lineSpacings, paragraphMargins, paragraphMarkings, readRulerType, tintBlends, wordSpacings } from "./consts"
+import { allThemes, readFocusRuler } from "../core/model/model"
+import { storage, saveToLocalStorage } from "../core/persistence"
+import { boldLevels, bundleFontList, columnWidths, defaultZoom, knownFontNames, letterSpacings, lineSpacings, paragraphBorders, paragraphMargins, paragraphMarkings, readFocusBehaviorHighlight, readFocusBehaviorRuler, readFocusRulerWhen, readFocusSizeHighlight, readFocusSizeRuler, readingFocuses, tintBlends, wordSpacings } from "./consts"
 import { SuggestedInput } from "./SuggestedInput"
 import { applyTheme, resolveCSSFilter, themes } from "./theme"
 
-let oldPreferences: { theme: '' | keyof allThemes, display: storageData['display'] }
-
-// TODO
-function _revert(all?: boolean): void {
-    if (all) {
-        overwritePreferences({})
-    } else {
-        storage.theme = oldPreferences.theme
-        storage.display = { ...oldPreferences.display }
-    }
-}
-
 /** Sets up the preferences page. */
 export function initPreferencesPage(): void {
-    oldPreferences = { theme: storage.theme, display: { ...storage.display } }
 
     //#region Reading column width
     const columnWidth = document.getElementById('prefsColumnWidth') as HTMLSelectElement
@@ -26,7 +13,9 @@ export function initPreferencesPage(): void {
         const option = document.createElement("option")
         option.text = entry[0]
         option.value = entry[1]
-        if (storage.display.columnWidth === entry[1]) {
+        if (storage.display.columnWidth === entry[1] ||
+            !storage.display.columnWidth && entry[0] === 'Default'
+        ) {
             option.selected = true
         }
         columnWidth.appendChild(option)
@@ -109,7 +98,8 @@ export function initPreferencesPage(): void {
         const option = document.createElement("option")
         option.text = entry[0]
         option.value = entry[1]
-        if (storage.display.paragraphMargin === entry[1]) {
+        if (storage.display.paragraphMargin === entry[1] ||
+            !storage.display.paragraphMargin && entry[1] === '') {
             option.selected = true
         }
         paragraphMargin.appendChild(option)
@@ -166,40 +156,91 @@ export function initPreferencesPage(): void {
         const option = document.createElement("option")
         option.text = entry
         option.value = entry
-        if (storage.display.paragraphStartStyle === entry) {
+        if (storage.display.paragraphMarking === entry ||
+            !storage.display.paragraphMarking && entry === 'None') {
             option.selected = true
         }
         paragraphMarking.appendChild(option)
     })
 
     paragraphMarking.addEventListener("change", () => {
-        storage.display.paragraphStartStyle = paragraphMarking.value
+        storage.display.paragraphMarking = paragraphMarking.value as typeof paragraphMarkings[number]
         saveToLocalStorage()
         applyDisplayPreferences()
     })
     //#endregion
 
-    //#region Reading ruler
-    const readRuler = document.getElementById('prefsReadRulerType') as HTMLSelectElement
-    readRulerType.forEach(entry => {
+    //#region Paragraph border
+    const paragraphBorder = document.getElementById('prefsParagraphBorder') as HTMLSelectElement
+    paragraphBorders.forEach(entry => {
         const option = document.createElement("option")
         option.text = entry
         option.value = entry
-        if (storage.display.readRulerStyle?.type === entry ||
-            !storage.display.readRulerStyle && entry === 'None') {
+        if (storage.display.paragraphBorder === entry ||
+            !storage.display.paragraphBorder && entry === 'None') {
             option.selected = true
         }
-        readRuler.appendChild(option)
+        paragraphBorder.appendChild(option)
     })
 
-    readRuler.addEventListener("change", () => {
-        storage.display.readRulerStyle = (readRuler.value === 'None')
-            ? undefined
-            : { type: readRuler.value as Exclude<typeof readRulerType[number], 'None'> }
-
+    paragraphBorder.addEventListener("change", () => {
+        storage.display.paragraphBorder = paragraphBorder.value as typeof paragraphBorders[number]
         saveToLocalStorage()
         applyDisplayPreferences()
     })
+    //#endregion
+
+    //#region Reading focus
+    const readingFocus = document.getElementById('prefsReadingFocus') as HTMLSelectElement
+    readingFocuses.forEach(entry => {
+        const option = document.createElement("option")
+        option.text = entry
+        option.value = entry
+        if (storage.display.readingFocus?.type === entry ||
+            !storage.display.readingFocus && entry === 'None') {
+            option.selected = true
+        }
+        readingFocus.appendChild(option)
+    })
+
+    readingFocus.addEventListener("change", () => {
+        storage.display.readingFocus = (readingFocus.value === 'None')
+            ? undefined
+            : { type: readingFocus.value as Exclude<typeof readingFocuses[number], 'None'> }
+
+        _setFocusPreferenceControls()
+        saveToLocalStorage()
+        applyDisplayPreferences()
+    })
+    //#endregion
+
+    //#region Focus preference controls
+    _setFocusPreferenceControls() // Sets all remaining focus controls dependent on other controls.
+
+    const focusRulerControls = document.getElementById('prefsFocusRulerControls') as HTMLSelectElement
+    const focusSize = document.getElementById('prefsFocusSize') as HTMLSelectElement
+    const focusBehavior = document.getElementById('prefsFocusBehavior') as HTMLSelectElement
+    focusRulerControls?.addEventListener('change', () => {
+        (storage.display.readingFocus as readFocusRuler).controls = focusRulerControls.value as typeof readFocusRulerWhen[number]
+        saveToLocalStorage()
+    })
+    focusSize?.addEventListener('change', () => {
+        storage.display.readingFocus!.size = focusSize.value
+        saveToLocalStorage()
+    })
+    focusBehavior?.addEventListener('change', () => {
+        storage.display.readingFocus!.behavior = focusBehavior.value as typeof readFocusBehaviorHighlight[number] | typeof readFocusBehaviorRuler[number]
+        _setFocusPreferenceControls()
+        saveToLocalStorage()
+    })
+
+    const readFocusColor = document.getElementById("prefsFocusColor") as HTMLInputElement    
+    readFocusColor.addEventListener('change', () => {
+        storage.display.readingFocus!.color = readFocusColor.value
+        saveToLocalStorage()
+        applyDisplayPreferences()
+    })
+
     //#endregion
 
     //#region Letter spacing
@@ -225,23 +266,23 @@ export function initPreferencesPage(): void {
     })
     //#endregion
 
-    //#region Font Weight
-    const fontWeight = document.getElementById('prefsAlwaysBold') as HTMLSelectElement
+    //#region Font bolding
+    const fontBolding = document.getElementById('prefsFontBolding') as HTMLSelectElement
     boldLevels.forEach(entry => {
         const option = document.createElement("option")
         option.text = entry[0]
         option.value = entry[1]
         if (storage.display.fontWeight === entry[1] ||
-            (!storage.display.fontWeight && option.value === '')) {
+            (!storage.display.fontWeight && option.value === '400')) {
             option.selected = true
         }
-        fontWeight.appendChild(option)
+        fontBolding.appendChild(option)
     })
 
-    fontWeight.addEventListener("change", () => {
-        storage.display.fontWeight = (fontWeight.value === '')
+    fontBolding.addEventListener("change", () => {
+        storage.display.fontWeight = (fontBolding.value === '')
             ? undefined
-            : fontWeight.value
+            : fontBolding.value
 
         saveToLocalStorage()
         applyDisplayPreferences()
@@ -343,7 +384,7 @@ export function initPreferencesPage(): void {
     // Clamps to range because Narrator has a bug that lets you violate bounds.
     // The minimums for the CSS filters are set to keep the site usable for sighted users fidgeting with controls.
     const items = [
-        ['prefsZoom', `${storage.display.zoom ?? '1.5'}`, (newValue: number) => {
+        ['prefsZoom', `${storage.display.zoom ?? defaultZoom()}`, (newValue: number) => {
             storage.display.zoom = Math.min(Math.max(newValue ?? 1.5, 0.8), 4)
         }],
         ['prefsFilterContrast', `${storage.display.readFilterContrast ?? '100'}`, (newValue: number) => {
@@ -360,6 +401,9 @@ export function initPreferencesPage(): void {
         }],
         ['prefsTintOpacity', `${storage.display.overlayOpacity ?? '0'}`, (newValue: number) => {
             storage.display.overlayOpacity = Math.min(Math.max(newValue ?? 0, 0), 90)
+        }],
+        ['prefsFocusOpacity', `${storage.display.readingFocus?.opacity ?? '25'}`, (newValue: number) => {
+            storage.display.readingFocus!.opacity = Math.min(Math.max(newValue ?? 25, 0), 100)
         }]
     ] as const;
     items.forEach(entry => {
@@ -446,9 +490,95 @@ export function togglePreferences(show?: boolean): void {
     if (show) {
         mainCol.style.display = 'none'
         prefs.style.display = ''
+
+        ;(document.getElementById('readRuler') as HTMLDivElement).style.display = 'none'
+        ;(document.getElementById('readRulerAbove') as HTMLDivElement).style.display = 'none'
+        ;(document.getElementById('readRulerBelow') as HTMLDivElement).style.display = 'none'
     } else {
         mainCol.style.display = ''
         prefs.style.display = 'none'
         applyDisplayPreferences() // Some changes made in preferences wait until exiting.
+    }
+}
+
+/** For accessibility options -> reading focus. These are the controls that adjust to match the chosen focus. */
+function _setFocusPreferenceControls(): void {
+    const focusRulerWhen = document.getElementById('prefsFocusRulerControls') as HTMLSelectElement
+    const focusSize = document.getElementById('prefsFocusSize') as HTMLSelectElement
+    const focusBehavior = document.getElementById('prefsFocusBehavior') as HTMLSelectElement
+    const readFocusColor = document.getElementById("prefsFocusColor") as HTMLInputElement
+    const readFocusOpacity = document.getElementById("prefsFocusOpacity") as HTMLInputElement
+    const readFocusOpacityNum = document.getElementById("prefsFocusOpacityNum") as HTMLInputElement
+    readFocusColor.value = storage.display.readingFocus?.color ?? "#00ffff"
+
+    const usingFocus = storage.display.readingFocus !== undefined
+    const usingRuler = usingFocus && storage.display.readingFocus!.type === 'Ruler'
+    const usingHighlight = usingFocus && storage.display.readingFocus!.type === 'Highlight'
+
+    readFocusColor.disabled = !usingFocus
+    readFocusOpacity.disabled = !usingFocus
+    readFocusOpacityNum.disabled = !usingFocus
+    focusRulerWhen.disabled = !usingRuler
+    focusBehavior.disabled = !usingFocus
+    focusSize.disabled = !usingFocus
+        || (usingHighlight
+            && storage.display.readingFocus!.behavior !== undefined
+            && storage.display.readingFocus!.behavior !== 'Highlight side')
+
+    const arrays = usingRuler
+        ? [readFocusSizeRuler, readFocusBehaviorRuler]
+        : [readFocusSizeHighlight, readFocusBehaviorHighlight]
+
+    if (storage.display.readingFocus) {
+        focusSize.replaceChildren(...arrays[0].map(entry => {
+            const option = document.createElement("option")
+            option.text = entry[0]
+            option.value = entry[1]
+            if (storage.display.readingFocus!.size === entry[1] ||
+                !storage.display.readingFocus!.size && entry[1] === '4rem')
+            {
+                option.selected = true
+            }
+            return option
+        }))
+
+        focusBehavior.replaceChildren(...arrays[1].map(entry => {
+            const option = document.createElement("option")
+            option.text = entry as string
+            option.value = entry as string
+            if (storage.display.readingFocus!.behavior === entry ||
+                (!storage.display.readingFocus?.behavior && (entry[1] === 'Highlight side' || entry[1] === 'Color inside')))
+            {
+                option.selected = true
+            }
+            return option
+        }))
+
+        if (storage.display.readingFocus.type === 'Ruler') {
+            focusRulerWhen.replaceChildren(...readFocusRulerWhen.map(entry => {
+                const option = document.createElement("option")
+                option.text = entry
+                option.value = entry
+
+                if ((storage.display.readingFocus as readFocusRuler).controls === entry) {
+                    option.selected = true
+                }
+                return option
+            }))
+        } else {
+            const option = document.createElement('option')
+            option.text = 'None'
+            option.value = ''
+            option.selected = true
+            focusRulerWhen.replaceChildren(option)
+        }
+    } else {
+        [focusSize, focusBehavior, focusRulerWhen].forEach(dropdown => {
+            const option = document.createElement('option')
+            option.text = 'None'
+            option.value = ''
+            option.selected = true
+            dropdown.replaceChildren(option)
+        })
     }
 }

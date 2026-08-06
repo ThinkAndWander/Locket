@@ -286,12 +286,44 @@ export const paragraphMarkings = [
     'Big 1st line'
 ] as const
 
-export const readRulerType = [
-    'None', 'Side highlight', 'Ruler'
+export const paragraphBorders = [
+    'None',
+    'Thinnest outline',
+    'Thin outline',
+    'Thick outline',
+    'Thin outline when hovered',
+    'Thick outline when hovered'
 ] as const
 
-export const readSideHighlightType = [
-    'Side', 'Body', 'Both'
+export const readingFocuses = [
+    'None', 'Highlight', 'Ruler'
+] as const
+
+export const readFocusSizeHighlight = [
+    ['Thin bar', '-0.1rem'],
+    ['Thick bar', '-0.2rem']
+]
+
+export const readFocusSizeRuler = [
+    ['1 line', '1rem'],
+    ['2 lines', '2rem'],
+    ['4 lines', '4rem'],
+    ['6 lines', '6rem'],
+    ['8 lines', '8rem'],
+    ['12 lines', '12rem'],
+    ['16 lines', '16rem']
+]
+
+export const readFocusBehaviorHighlight = [
+    'Highlight side', 'Highlight paragraph'
+] as const
+
+export const readFocusBehaviorRuler = [
+    'Color inside', 'Color outside'
+] as const
+
+export const readFocusRulerWhen = [
+    'Move on tap, drag, and hover', 'Move on tap and drag', 'Move on tap'
 ] as const
 
 export const letterSpacings = [
@@ -387,4 +419,12 @@ export const selfPronouns = {
     appendForNames: ['', '', "'s", '', "'s"], // e.g. Jane -> Jane's, for possessive words.
     singular: ['I', 'me', 'my', 'myself', 'mine'],
     plural: ['we', 'us', 'our', 'ourselves', 'ours']
+}
+
+/** Determines an ok zoom to default to, based on screen width. */
+export function defaultZoom(): number {
+    return window.matchMedia("(min-width: 40rem)").matches ? 1.5
+        : window.matchMedia("(min-width: 30rem)").matches ? 1.2
+        : window.matchMedia("(min-width: 20rem)").matches ? 1
+        : 0.8
 }

@@ -1,6 +1,6 @@
 import { allThemes, dynamicTheme, theme, themeBase, themeBasedOn } from "../core/model/model"
 import { storage, saveToLocalStorage } from "../core/persistence"
-import { bundleFontList, paragraphMarkings } from "./consts"
+import { bundleFontList, defaultZoom } from "./consts"
 
 let everInitTheme = false
 let _themeStyles: HTMLStyleElement | undefined // Reference held to a dynamic stylesheet.
@@ -25,7 +25,7 @@ export const themes: allThemes = {
     light: {
         name: "Light",
         page: "rgb(245, 245, 245)",
-        altParagraph: "rgb(245, 245, 245)",
+        pageHighlight: "rgb(245, 245, 245)",
         text: "rgb(17, 17, 17)",
         control: "rgb(182, 182, 182)",
         controlFocus: "rgb(224, 224, 224)",
@@ -38,7 +38,7 @@ export const themes: allThemes = {
     lowContrastLight: {
         name: "Light Low Contrast",
         page: "rgb(198, 198, 181)",
-        altParagraph: "rgb(198, 198, 181)",
+        pageHighlight: "rgb(198, 198, 181)",
         text: "rgb(99, 99, 99)",
         control: "rgb(150, 150, 150)",
         controlFocus: "rgb(200, 200, 200)",
@@ -51,7 +51,7 @@ export const themes: allThemes = {
     highContrastLight: {
         name: "Light High Contrast",
         page: "white",
-        altParagraph: "white",
+        pageHighlight: "white",
         text: "black",
         control: "rgb(0, 0, 128)",
         controlFocus: "rgb(34, 34, 34)",
@@ -65,7 +65,7 @@ export const themes: allThemes = {
     blackOnWhite: {
         name: "Black on White",
         page: "white",
-        altParagraph: "p:nth-child(2n) { background: black; color: white; } p:nth-child(2n) button { filter: invert(); }",
+        pageHighlight: "p:nth-child(2n) { background: black; color: white; } p:nth-child(2n) button { filter: invert(); }", // TODO this will *break* color-mix and other places. So it must be moved back to special handling.
         text: "black",
         control: "black",
         controlFocus: "rgb(34, 34, 34)",
@@ -78,7 +78,7 @@ export const themes: allThemes = {
     dark: {
         name: "Dark",
         page: "rgb(32, 32, 32)",
-        altParagraph: "black",
+        pageHighlight: "black",
         text: "rgb(255, 255, 250)",
         control: "rgb(226, 226, 226)",
         controlFocus: "rgb(245, 245, 245)",
@@ -92,7 +92,7 @@ export const themes: allThemes = {
     lowContrastDark: {
         name: "Dark Low Contrast",
         page: "rgb(41, 41, 41)",
-        altParagraph: "rgb(41, 41, 41)",
+        pageHighlight: "rgb(41, 41, 41)",
         text: "rgb(120, 120, 120)",
         control: "rgb(103, 103, 103)",
         controlText: "rgb(15, 15, 15)",
@@ -106,7 +106,7 @@ export const themes: allThemes = {
     highContrastDark: {
         name: "Dark High Contrast",
         page: "black",
-        altParagraph: "black",
+        pageHighlight: "black",
         text: "white",
         control: "white",
         controlFocus: "rgb(240, 240, 240)",
@@ -120,7 +120,7 @@ export const themes: allThemes = {
     whiteOnBlack: { // Hard on users with astigmatisms
         name: "White on Black",
         page: "black",
-        altParagraph: "p:nth-child(2n) { background: white; color: black; } p:nth-child(2n) button { filter: invert(); }",
+        pageHighlight: "p:nth-child(2n) { background: white; color: black; } p:nth-child(2n) button { filter: invert(); }",
         text: "white", 
         control: "white",
         controlFocus: "rgb(240, 240, 240)",
@@ -133,7 +133,7 @@ export const themes: allThemes = {
     forcedColors: { // Forced-color compat
         name: "System",
         page: "Canvas",
-        altParagraph: "Canvas",
+        pageHighlight: "Canvas",
         text: "CanvasText",
         control: "ButtonFace",
         controlDisabled: "ButtonFace",
@@ -148,7 +148,7 @@ export const themes: allThemes = {
     simpleLight: {
         name: "Simple Light",
         page: "rgb(231, 231, 231)",
-        altParagraph: "rgb(231, 231, 231)",
+        pageHighlight: "rgb(231, 231, 231)",
         text: "rgb(40, 40, 40)",
         control: "transparent",
         controlFocus: "white",
@@ -161,7 +161,7 @@ export const themes: allThemes = {
     simpleDark: {
         name: "Simple Dark",
         page: "rgb(40, 40, 40)",
-        altParagraph: "rgb(40, 40, 40)",
+        pageHighlight: "rgb(40, 40, 40)",
         text: "rgb(231, 231, 231)",
         control: "transparent",
         controlFocus: "black",
@@ -174,7 +174,7 @@ export const themes: allThemes = {
     ocean: {
         name: "Ocean",
         page: "rgb(34, 34, 102)",
-        altParagraph: "rgb(34, 34, 102)",
+        pageHighlight: "rgb(34, 34, 102)",
         text: "rgb(252, 252, 224)",
         control: "rgb(167, 213, 176)",
         controlFocus: "rgb(212, 255, 220)",
@@ -188,7 +188,7 @@ export const themes: allThemes = {
     dandelion: {
         name: "Dandelion",
         page: "linear-gradient(rgb(255, 202, 176) 0%, rgb(222, 210, 150) 100%)",
-        altParagraph: "rgb(238, 206, 162)",
+        pageHighlight: "rgb(238, 206, 162)",
         text: "rgb(40, 40, 0)",
         control: "rgb(255, 235, 170)",
         controlFocus: "rgb(255, 251, 223)",
@@ -203,7 +203,7 @@ export const themes: allThemes = {
         name: "Candle",
         base: themeBase.Light,
         page: "radial-gradient(circle, #ffecd2 0%, #fcc69f 100%);",
-        altParagraph: "rgb(253, 216, 184)",
+        pageHighlight: "rgb(253, 216, 184)",
         control: "rgb(255, 239, 174)",
         controlFocus: "white",
         column: "rgba(217, 218, 195, 0.53)"
@@ -212,7 +212,7 @@ export const themes: allThemes = {
         name: "Midnight",
         base: themeBase.Dark,
         page: "linear-gradient(rgb(15, 12, 41) 0%, rgb(48, 43, 99) 50%, rgb(36, 36, 62) 100%)",
-        altParagraph: "black",
+        pageHighlight: "black",
         themeCSS: [
             `#mainColumn,
              #preferences {
@@ -225,7 +225,7 @@ export const themes: allThemes = {
         name: "Matrix",
         base: themeBase.Light,
         page: "rgb(54, 54, 54)",
-        altParagraph: "rgb(54, 54, 54)",
+        pageHighlight: "rgb(54, 54, 54)",
         text: "rgb(127, 255, 55)",
         control: "rgb(8, 48, 0)",
         controlFocus: "rgb(16, 94, 0)",
@@ -250,7 +250,7 @@ export const themes: allThemes = {
         focusBorder: "rgb(255, 183, 183)",
         column: "rgba(249, 254, 255, 0.5)",
         page: "linear-gradient(90deg, #e0eafc 0%, #cfdef3 80%, #dfdef3 82%, #dfdef3 87%, #cfdef3 96%, #e0eafc 100%);",
-        altParagraph: "rgb(224, 234, 252)",
+        pageHighlight: "rgb(224, 234, 252)",
     },
     strawberry: {
         name: "Strawberry",
@@ -260,7 +260,7 @@ export const themes: allThemes = {
         column: "rgba(223, 201, 245, 0.87)",
         header: "rgb(255, 215, 215)",
         page: `rgb(207, 222, 243) ${patterns.dots('44px', 'rgba(255, 0, 255, 0.22)')}`,
-        altParagraph: "rgb(231, 110, 249)",
+        pageHighlight: "rgb(231, 110, 249)",
         themeCSS: [
             `#mainColumn,
              #preferences {
@@ -282,7 +282,7 @@ export const themes: allThemes = {
         get: () => ({
             base: themeBase.Dark,
             page: "linear-gradient(0deg, rgb(172, 112, 145) 0%,rgb(151, 86, 142) 100%)",
-            altParagraph: "rgb(161, 98, 143)",
+            pageHighlight: "rgb(161, 98, 143)",
             text: "rgb(254, 220, 255)",
             control: "transparent",
             controlFocus: "transparent",
@@ -315,7 +315,7 @@ export const themes: allThemes = {
         header: "linear-gradient(rgb(205, 228, 242) 0%, rgb(126, 191, 231) 98%, black)",
         column: "white",
         page: "linear-gradient(to bottom, aliceblue, rgb(255, 231, 231), rgb(255, 214, 184))",
-        altParagraph: "rgb(255, 222, 207)",
+        pageHighlight: "rgb(255, 222, 207)",
         themeCSS: [`
             #headerBar button {
                 background: white;
@@ -432,10 +432,10 @@ export function applyTheme(givenTheme?: theme): void {
     }
 
     // Resolves the paragraph starting style.
-    const pStyle = storage.display.paragraphStartStyle as typeof paragraphMarkings[number]
+    const pStyle = storage.display.paragraphMarking === 'None' ? undefined : storage.display.paragraphMarking
     const resolvedParagraphStyle = 
-        pStyle === 'Alternating background' && css.altParagraph.includes('{') ? css.altParagraph
-        : pStyle === 'Alternating background' ? `p:nth-child(2n) { background: color-mix(${css.altParagraph}, contrast-color(${css.altParagraph}) 10%); }`
+        pStyle === 'Alternating background' && css.pageHighlight.includes('{') ? css.pageHighlight
+        : pStyle === 'Alternating background' ? `p:nth-child(2n) { background: color-mix(${css.pageHighlight}, contrast-color(${css.pageHighlight}) 10%); }`
         : pStyle === 'Alternating indent' ? `p:nth-child(2n) { padding-left: 0.5rem; }`
         : pStyle === 'Big 1st letter' ? `p::first-letter { font-size: 1.2em; }`
         : pStyle === 'Big 1st line' ? `p::first-line { font-size: 1.1em; }`
@@ -447,7 +447,7 @@ export function applyTheme(givenTheme?: theme): void {
         : pStyle === 'Highlight 1st line' ? `p::first-line { background: color-mix(${css.column ?? css.page}, ${css.link} 30%); }`
         : pStyle === 'Underline 1st letter' ? `p::first-letter { text-decoration: underline 0.1rem color-mix(${css.text}, ${css.focusBorder} 70%); }`
         : pStyle === 'Underline 1st line' ? `p::first-line { text-decoration: underline 0.1rem color-mix(${css.text}, ${css.focusBorder} 70%); }`
-        : pStyle satisfies 'None'
+        : pStyle satisfies undefined
 
     // It's easy to forget semi-colons here and hard to debug, fair warning.
     const rules: string[] = [
@@ -466,6 +466,12 @@ export function applyTheme(givenTheme?: theme): void {
             width: 0.6rem;
             padding-left: 0.2rem;
             vertical-align: super;
+        }`,`
+        #readRuler,
+        #readRulerAbove,
+        #readRulerBelow {
+            background-color: ${storage.display.readingFocus ? (storage.display.readingFocus.color ?? '#00ffff') : '#00ffff'};
+            opacity: ${storage.display.readingFocus?.opacity ?? 25}%;
         }`,`
         #overlay,
         #leftGutter,
@@ -491,17 +497,48 @@ export function applyTheme(givenTheme?: theme): void {
             font-family:${storage.display.font !== undefined
                 ? resolvedFontData[0] + ', '
                 : ''}var(--fallback-fonts);
+
             ${resolvedFontData[1] /* May set letter-spacing, etc. Put first so user settings can override. */}
+
             ${storage.display.wordSpacing
                 ? `word-spacing: ${storage.display.wordSpacing};`
                 : ''}
+
             ${storage.display.letterSpacing
                 ? `letter-spacing: ${storage.display.letterSpacing};`
                 : ''}
+
             ${storage.display.fontWeight
                 ? `font-weight: ${storage.display.fontWeight};`
                 : ''}
+            
             ${resolvedParagraphStyle ?? ''}
+
+            ${storage.display.paragraphBorder && storage.display.paragraphBorder !== 'None' ?
+                storage.display.paragraphBorder === 'Thinnest outline' ? `& p { outline: 0.05rem solid color-mix(${css.pageHighlight}, contrast-color(${css.pageHighlight}) 20%); outline-offset: 0.1rem; }` :
+                storage.display.paragraphBorder === 'Thin outline' ? `& p { outline: 0.1rem solid color-mix(${css.pageHighlight}, contrast-color(${css.pageHighlight}) 20%); outline-offset: 0.1rem; }` :
+                storage.display.paragraphBorder === 'Thick outline' ? `& p { outline: 0.2rem solid color-mix(${css.pageHighlight}, contrast-color(${css.pageHighlight}) 20%); outline-offset: 0.2rem; }` :
+                `& p:hover, & p:active, & p:focus {
+                    outline: ${storage.display.paragraphBorder === 'Thin outline when hovered' ? '0.1' : '0.2'}rem solid color-mix(${css.pageHighlight}, contrast-color(${css.pageHighlight}) 20%);
+                    outline-offset: ${storage.display.paragraphBorder === 'Thin outline when hovered' ? '0.1' : '0.2'}rem; }`
+                : ''}
+
+            ${storage.display.readingFocus?.type === 'Highlight' &&
+                (!storage.display.readingFocus.behavior || storage.display.readingFocus.behavior === 'Highlight side') ? `
+                & p:hover,
+                & p:active,
+                & p:focus {
+                    box-shadow: ${storage.display.readingFocus.size ?? '-0.1rem'} 0px 0px 0px color-mix(${storage.display.readingFocus.color ?? '#00ffff'} ${storage.display.readingFocus.opacity ?? 25}%);
+                }
+                & p {
+                    padding-left: 0.1rem;
+                }` : ''}
+            ${storage.display.readingFocus?.type === 'Highlight' && storage.display.readingFocus.behavior === 'Highlight paragraph' ? `
+                & p:hover,
+                & p:active,
+                & p:focus {
+                    background-color: color-mix(${storage.display.readingFocus.color ?? '#00ffff'} ${storage.display.readingFocus.opacity ?? 25}%);
+                }` : ''}
         }
         `, `
         body {
@@ -534,7 +571,16 @@ export function applyTheme(givenTheme?: theme): void {
                 opacity: 0.8;
             }
 
-            ${storage.display.showDisabledStatus ? '' : `
+            ${storage.display.showDisabledStatus ? `
+                button:disabled:after {
+                    content: " 🛇";
+                    line-height: 1rem;`/* Firefox (Linux) needs this */+`
+                }
+
+                label:has(+ select:disabled)::after,
+                label:has(+ input:disabled)::after {
+                    content: " 🛇 ";
+                }` : `
                 & button:disabled,
                 & select:disabled,
                 & input:disabled {
@@ -571,7 +617,7 @@ export function applyTheme(givenTheme?: theme): void {
                 border-color: ${css.focusBorder};
             }
 
-            input[type="checkbox"] {
+            input[type="checkbox"]:not(:disabled) {
                 border: 0.1rem solid ${css.controlText ?? css.text};
             }
         }`,
@@ -595,13 +641,8 @@ export function applyTheme(givenTheme?: theme): void {
         `#headerBar,
         #mainColumn,
         #preferences {
-            zoom: ${storage.display.zoom ?? '1.5'};
+            zoom: ${storage.display.zoom ?? defaultZoom()};
         }`,
-        storage.display.showDisabledStatus ? `
-            button:disabled:after {
-            content: " 🛇";
-            line-height: 1rem;`/* Firefox (Linux) needs this */+`
-            }` : '',
         css.column ? `
             #mainColumn,
             #preferences {
