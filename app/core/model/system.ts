@@ -86,10 +86,10 @@ export function getCombinedIdentity(character: system): headmate {
                 combined.genderedLanguagePreference = 'none'
             } else if (femCount > 0) {
                 combined.bodyAttractPreference = 'fem'
-                combined.genderedLanguagePreference = 'match'
+                combined.genderedLanguagePreference = 'fem'
             } else if (mascCount > 0) {
                 combined.bodyAttractPreference = 'masc'
-                combined.genderedLanguagePreference = 'match'
+                combined.genderedLanguagePreference = 'masc'
             }
         }
     }

@@ -114,7 +114,6 @@ body {
 
 button {
     border-color: transparent; /* To appear around the button without pushing layout. */
-    border-radius: 0.4rem;
     border-width: 0.2rem;
     margin: 0.25rem;
     min-height: 1.5rem;
@@ -247,7 +246,8 @@ textarea {
     width: 100%;
 }
 
-#preferences {
+#preferences,
+.controlsArea {
     font-family: var(--fallback-fonts); /* Don't use the reading font. */
 
     & button {
@@ -329,7 +329,6 @@ textarea {
         position: absolute;
     }
     & .suggestableInputEntry {
-        border-radius: 0;
         width: 100%;
         padding: 0 0 0 0.1rem;
         margin: 0;
@@ -341,4 +340,10 @@ textarea {
     .suggestableInputContainer:not(:focus-within):not(:has(input[type='text']:focus)) .suggestableInputTray {
         display: none;
     }
+}
+
+.clearfix::after {
+    content: "";
+    clear: both;
+    display: table;
 }

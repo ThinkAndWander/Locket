@@ -137,3 +137,23 @@ Locket maintains an exportable log of inputs and outputs in history, along with 
 
 __Reminders__  
 Locket can be configured to occasionally remind the user of a custom message, like to take medicine, drink water, take a break or save and exit. The message appears at the top of the next response, such as after clicking a link.
+
+## Future and Roadmap
+
+It's the author's wish to one day separate Locket from its engine. For now, it's built alongside it so as proof-of-concept that the engine is viable, and to ensure this.
+
+### Locket
+
+There could be more focus on the tooling shorthands just for Locket.
+
+### Engine
+
+The author will have metadata fields for a generated ISBN according to the [Treaty of Babel](https://babel.ifarchive.org/babel_rev11.html), will have a live editable interface and tooling to identify dead end forks, unwritten forks, stubs, etc.
+
+Readers always take precedence. Authors cannot even set themes. They can recommend an experience in the description, like normal. It's better to have a community understanding than to enforce rules, and what a reader sets as preferences should be respected always. The engine is already designed to account for some of this: if text is bolded by default, it gets even bolder when bold text in the story is shown. This sort of style handling should be applied everywhere. Theme colors should be used instead of raw colors, or hues so that the brightness can be adjusted automatically to the theme. All of this will be availed for use so that authors can better handle reader preferences to improve their chosen experience. It's ideal to write plainly or with only bolding and italic emphasis. Colors, fonts, fancy animations, etc. can really get in the way for some and become easy ways to accidentally create information available only to the users who can see it. (More will be expanded on for author guidance when this all happens.)
+
+Reader choices will be universal across all stories. It's going to be like a website with no established site.
+
+Some features of Locket will need rework or abandonment as they don't scale, e.g. 
+
+Other features: Enable the input control and create reader styling for it. Add version control to scripts and things that need it, and import/export to preferences. Add extensible relative URL handling to the Javascript API, and `?reset` and `?reset=theme` switches for clearing all preferences and just theme preferences, respectively. Add cookie clearing and cookie denial.

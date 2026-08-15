@@ -2,6 +2,8 @@
 
 This guide is just for writers, not how anything is designed. Or the game elements. [see the README](https://github.com/ThinkAndWander/Locket/blob/main/README.md) for that!
 
+The authoring syntax is documented here, but it can be daunting. Try reading story.md a little first, and look here if you don't understand something. Programming syntax is documented in [the Cookbook](https://github.com/ThinkAndWander/Locket/blob/main/Cookbook.md)
+
 ## Get started!
 
 The story is written exclusively in English, in [markdown](https://www.markdownguide.org/basic-syntax/) along with:
@@ -250,46 +252,3 @@ For the best experience for all users:
 - Avoid emojis and 𝑓𝑎𝑛𝑐𝑦 unicode. It won't work everywhere. The big social medias use emoji/COLv1 fonts to solve this, so you could try that
 - Avoid sArCaSm and ~~striking~~. It reduces legibility
 - Don't <u>underline</u>. It looks like a link
-
-## Programming API
-Story code can execute as HTML or Javascript. User custom JS can also execute with access to the API, but it won't execute as HTML because there is no clear place to inject it.
-
-`` `code` `` will execute if it can, as either:
-- HTML if it starts with `<` and is story code
-- Javascript otherwise, and it's:
-  - Multi-line for \`\`\` code blocks \`\`\` or if it has an `=` sign
-  - Single-line otherwise. These add their result to the screen, if it's not `undefined` or `null`.
-
-The API is simple full access, but **has no guarantee** that code written will not break later unless it's part of the `c` object.
-
-**API Members**
-`c`: Stands for context. This Javascript object is the only safe place to put variables, and a dedicated place to share variables between scripts. If you want to keep variables, define them here so they get saved!
-
-`game`: Provides access to the game and app options, to the entire story, the error log and the player object. It's defined in `model.d.ts`, or you can use intellisense in the browser to understand it.
-
-`characters`: Provides access to all known non-player characters in the game. It's defined in `model.d.ts`, but most of it is in `characters.ts`. Intellisense helps here too.
-
-There are just three special code things added by Locket:
-- `c`, which is a really short abbreviation of "context", because you'll use it a lot. It's a JS object and whatever is set on it can be used between scripts and will be saveable.
-- `game`, which lets you change most things
-- `characters`, which has every character
-
-**Dependable HTML IDs**  
-To ensure that extensions of Javascript (or user CSS!) can reliably reference the HTML, these following HTML IDs are guaranteed not to change unless the element (and concept) are removed from the game:
-- `overlay`: Covers the whole page and is used for theme tint
-- `leftGutter`, `rightGutter`: The gutters used to tint the sides
-- `page`: The center portion which contains all but the gutters
-- `headerBar`: Contains the header
-- `headerSettings`: The button that activates Preferences page
-- `mainColumn`: The reading column and input textbox
-- `outputArea`: Contents of the reading column
-- `inputArea`: The input textbox element
-- `preferences`: The Preferences page
-- `prefsFilterHue`, `prefsFilterHueNum`: Filter slider & spinner
-- `prefsFilterSaturation`, `prefsFilterSaturationNum`: Filter slider & spinner
-- `prefsFilterBrightness`, `prefsFilterBrightnessNum`: Filter slider & spinner
-- `prefsCustomFilter`: textarea element whose contents get appended to a `filter:` css style on body element
-- `prefsTint`: The tint input element whose value is a color (in *any* format). Opacity is ignored.
-- `prefsTintOpacity`, `prefsTintOpacityNum`: Tint slider & spinner
-- `prefsTintMethod`: Sets mix-blend-mode on the overlay element
-- `prefsCustomCSS`, `prefsCustomJS`: the textarea elements for user CSS/JS, in case they want to send JS to the CSS textarea

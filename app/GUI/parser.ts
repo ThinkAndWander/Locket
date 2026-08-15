@@ -1,11 +1,13 @@
 /** The story is written directly in a superset of Markdown; see the readme. */
 
 import * as marked from 'marked'
-import { injectPronouns } from '../core/model/placeholders'
+import { getName, injectPronouns, listNames } from '../core/model/placeholders'
 import { getFronters } from '../core/model/system'
 import { outputHTML } from './display'
 import { character, fork, forkDescriptorName, forkDescriptors, forkLink, game, linkDescriptorName, linkDescriptors, triggerWarning } from '../core/model/model'
 import { characters } from '../story/characters'
+import { engineVersion, pronouns, selfPronouns, subjectMatch } from './consts'
+import { newHeadmate } from '../core/model/headmates'
 
 /** Fork name: string start, @ symbol, any whitespace, 1+ words and any remaining words or whitespace. */
 const _untrimmed_fork_name = /(?<=^@)\s*\w+(\w| )*/gum
@@ -13,9 +15,21 @@ const _untrimmed_fork_name = /(?<=^@)\s*\w+(\w| )*/gum
 /** Fork descriptor: string start, 2 @ symbols, any whitespace, 1+ words and any remaining words, whitespace or commas. */
 const _untrimmed_fork_descriptor = /(?<=^@@)\s*\w+(\w| |,)*/gum
 
-const _startswith_tag = /^\s*<.+?>/u
-
 let _everInitParsing = false
+
+/** A little API of guaranteed key names (do not change them) for scripts */
+const scriptAPI = {
+    version: engineVersion.change,
+    pronouns: pronouns,
+    selfPronouns: selfPronouns,
+    subjectMatch: subjectMatch,
+    newHeadmate: newHeadmate,
+    pronounify: injectPronouns,
+    getName: getName,
+    getNames: listNames,
+    jumpToFork: jumpToFork,
+    marked: marked
+}
 
 /** Extends the Marked.js engine to handle fork links, alted text, and code eval. Call once. */
 export function initParsing(game: game) {
@@ -35,26 +49,14 @@ export function initParsing(game: game) {
 
                 if (token.type === 'code' || token.type === 'codespan') {
                     try {
-                        // Valid Javascript can't start with a < character, and HTML must. So we just fork this into an
-                        // HTML token to render later. Very convenient! Works in-line but ```html is nice when editing.
-                        if (_startswith_tag.test(token.text)) {
-                            const tokenAs = token as marked.Tokens.HTML
-                            tokenAs.type = "html"
-                            tokenAs.text = token.text
-                            tokenAs.raw = token.text
-                            tokenAs.block = false
-                            tokenAs.pre = false
-                            return true
-                        }
-
                         // Assume the code is Javascript and try to execute it.
                         // Codespans use eval() for its expression-returning (for brevity) if an = sign isn't present
                         // (not a die-hard metric that it's not just an expression, but almost always accurate). We use
                         // eval *in* Function() because we'd have to create vars with those names otherwise, and
                         // minification would break user expectations on top of that.
                         let result = (token.type === 'codespan' && !(token.text as string).includes('='))
-                            ? Function("game", "characters", "c", `return eval(${token.text})`)(game, characters, game.codecontext)
-                            : Function("game", "characters", "c", token.text)(game, characters, game.codecontext)
+                            ? Function("game", "characters", "c", "api", `return eval(${token.text})`)(game, characters, game.codecontext, scriptAPI)
+                            : Function("game", "characters", "c", "api", token.text)(game, characters, game.codecontext, scriptAPI)
                         
                         if (typeof result === 'boolean' ||
                             typeof result === 'number' ||
@@ -354,7 +356,12 @@ function processLink(game: game, textPart: string, urlPart: string): forkLink {
 
 /** Loads a fork by setting the game's current fork and options, parsing the fork contents, and sending them to display. */
 export function jumpToFork(game: game, fork: fork) {
+    game.story.callbacks.beforeUnload.forEach(func => { if (typeof func === 'function') { func() } })
+    game.story.callbacks.afterLoad = []
     game.story.fork = fork
+
+    // Clear old output. Do this before parsing new output in case scripts output elements directly.
+    outputHTML(true)
 
     // Inject placeholders
     const frontingList = getFronters(game.player.system)
@@ -391,7 +398,9 @@ export function jumpToFork(game: game, fork: fork) {
     }
 
     attachForkLinkEvents(container)
-    outputHTML(true, container)
+    outputHTML(false, container)
+    game.story.callbacks.globalAfterLoad.forEach(func => { if (typeof func === 'function') { func() } })
+    game.story.callbacks.afterLoad.forEach(func => { if (typeof func === 'function') { func() } })
 }
 
 /** Formats and returns a button based on the given link. */

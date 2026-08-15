@@ -3,7 +3,9 @@ set -e
 
 # Copy the story to the website build so story.md can keep its MD file extension.
 # Do this first so it gets picked up with compilation
+# Try https://sed.js.org/ to test sed commands to tweak/extend preprocessing
 cp -f "story.md" "app/story.md.ts" # copy and overwrite from source
+sed -i 's/\\/\\\\/g' "app/story.md.ts" # escape backslashes so surrounding backticks won't consume it
 sed -i 's/`/\\`/g' "app/story.md.ts" # escape backticks so the user can type them plainly
 sed -i -z 's/^/export const mainStory = \`/' "app/story.md.ts" # prepend a name so it can be accessed
 echo "\`" >> "app/story.md.ts" # append the last backtick making it an exported string literal

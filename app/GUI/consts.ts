@@ -1,3 +1,11 @@
+export const engineVersion = {
+    /** A major version to mark arbitrary ideas of what counts as important. */
+    major: 1,
+
+    /** A change number that increments for each public engine update. It doesn't reset to 0. */
+    change: 0
+} as const
+
 export const columnWidths = [
     ['Narrow', '30rem'],
     ['Default', '50rem'],
@@ -240,13 +248,6 @@ export const knownFontNames = [
     'Zapfino',
 ]
 
-export const lineSpacings = [
-    ['Dense', '1rem'],
-    ['Default', '1.2rem'],
-    ['More', '1.5rem'],
-    ['Double', '2rem'],
-    ['Spacious', '3rem']]
-
 export const paragraphMargins = [
     ['Dense', '-0.75rem'],
     ['Half', '-0.5rem'],
@@ -256,6 +257,30 @@ export const paragraphMargins = [
     ['Double', '2rem'],
     ['Over Double', '2.5rem'],
     ['Triple', '3rem']]
+
+export const lineSpacings = [
+    ['Dense', '1rem'],
+    ['Default', '1.2rem'],
+    ['More', '1.5rem'],
+    ['Double', '2rem'],
+    ['Spacious', '3rem']]
+
+export const wordSpacings = [
+    ['Less', '-0.05rem'],
+    ['Default', ''],
+    ['Slight', '0.05rem'],
+    ['Expand', '0.1rem'],
+    ['Lots', '0.3rem'],
+    ['Spacious', '0.5rem']]
+
+export const letterSpacings = [
+    ['Dense', '-0.0375rem'],
+    ['Reduce', '-0.02rem'],
+    ['Default', ''],
+    ['Expand', '0.02rem'],
+    ['Wide 1', '0.0375rem'],
+    ['Wide 2', '0.05rem'],
+    ['Wide 3', '0.1rem']]
 
 export const boldLevels = [
     ['Thin', '100'],
@@ -325,23 +350,6 @@ export const readFocusBehaviorRuler = [
 export const readFocusRulerWhen = [
     'Move on tap, drag, and hover', 'Move on tap and drag', 'Move on tap'
 ] as const
-
-export const letterSpacings = [
-    ['Dense', '-0.0375rem'],
-    ['Reduce', '-0.02rem'],
-    ['Default', ''],
-    ['Expand', '0.02rem'],
-    ['Wide 1', '0.0375rem'],
-    ['Wide 2', '0.05rem'],
-    ['Wide 3', '0.1rem']]
-
-export const wordSpacings = [
-    ['Less', '-0.05rem'],
-    ['Default', ''],
-    ['Slight', '0.05rem'],
-    ['Expand', '0.1rem'],
-    ['Lots', '0.3rem'],
-    ['Spacious', '0.5rem']]
 
 export const tintBlends = [
     ['Color', 'color'],

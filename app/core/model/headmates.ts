@@ -27,7 +27,7 @@ export function newHeadmate(system: system): headmate {
     return {
         attributes: [],
         bodyAttractPreference: 'any',
-        genderedLanguagePreference: 'match',
+        genderedLanguagePreference: 'none',
         frontFactor: {
             desireToFront: 1,
             headmateModifier: [],

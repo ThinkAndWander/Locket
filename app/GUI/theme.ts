@@ -299,7 +299,8 @@ export const themes: allThemes = {
                 `textarea {
                     border-color: rgb(167, 255, 249);
                 }`,
-                `#preferences summary {
+                `#preferences summary,
+                .controlsArea summary {
                     color: rgb(254, 220, 255)
                 }`
             ]
@@ -431,6 +432,18 @@ export function applyTheme(givenTheme?: theme): void {
         resolvedFontData = `${bundleFontList[index][1]}|`.split('|', 2)
     }
 
+    // Set CSS variables as part of the API available to story writers. Letting the browser manage callback state when
+    // it relates to CSS is far more efficient and clean.
+    const root = document.querySelector(':root') as HTMLElement;
+    root.style.setProperty('--api-pref-zoom', `${storage.display.zoom ?? defaultZoom()}`);
+    root.style.setProperty('--api-pref-font', `${storage.display.font ?? ''}`);
+    root.style.setProperty('--api-pref-font-weight', `${storage.display.fontWeight ?? 400}`);
+    root.style.setProperty('--api-pref-spacing-paragraph', `${storage.display.paragraphMargin ?? '1rem'}`);
+    root.style.setProperty('--api-pref-spacing-word', `${storage.display.wordSpacing ?? 0}`);
+    root.style.setProperty('--api-pref-spacing-line', `${storage.display.lineHeight ?? '1rem'}`);
+    root.style.setProperty('--api-pref-spacing-letter', `${storage.display.letterSpacing ?? 0}`);
+    root.style.setProperty('--api-pref-show-disabled-status', `${storage.display.showDisabledStatus ?? false}`);
+
     // Resolves the paragraph starting style.
     const pStyle = storage.display.paragraphMarking === 'None' ? undefined : storage.display.paragraphMarking
     const resolvedParagraphStyle = 
@@ -457,8 +470,7 @@ export function applyTheme(givenTheme?: theme): void {
         [href^="#"], /* exclude hash only links */
         [href^="javascript:" i], /* exclude javascript only links */
         [href^="/"]:not([href^="//"]), /* exclude relative but not double slash only links */
-        [href*="//stackoverflow.com"], /* domains to exclude */
-        [href*="//meta.stackoverflow.com"], /* subdomains to exclude */
+        [href*="//github.com/ThinkAndWander/Locket"] /* domains to exclude */
         )):after {
             content: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 31.55 31.49'%3E%3Cdefs%3E%3CclipPath id='a'%3E%3Cpath d='M0 0h32v32H0z'/%3E%3C/clipPath%3E%3C/defs%3E%3Cg fill='none' stroke='${css.text}' stroke-width='3' clip-path='url(%23a)' transform='translate(-.2 -.2)'%3E%3Cpath d='M21.7 1.7h8.56m0-1.5v9.94m0-8.44L14.52 17.46M13.99 2.7H.2m29.06 27.5V17.98m1.5 12.22H.21m1.5.07V1.7'/%3E%3C/g%3E%3C/svg%3E");
             display: inline-block;
@@ -622,7 +634,7 @@ export function applyTheme(givenTheme?: theme): void {
             }
         }`,
         /** Visually affirms the space between label and checkbox is part of the control, since it's clickable. */
-        `#preferences {
+        `#preferences, .controlsArea {
             & label:has(input[type="checkbox"]):hover {
                 background-color: ${css.controlFocus};
                 color: ${css.controlText};

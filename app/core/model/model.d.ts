@@ -210,11 +210,9 @@ export type headmate = {
 
      /** Determines how characters interact with the headmate when using gendered language:
       * - None: do NOT use gendered language. This is the default
-      * - Match: "" use gendered language matching the body attract preference
       * - Masc and fem: use gendered language
-      * 
       * None is like "hey!", masc is like "hey dude!", and fem is like "hey girl!" */
-     genderedLanguagePreference: "none" | "match" | "masc" | "fem"
+     genderedLanguagePreference: "none" | "masc" | "fem"
 
     /** What this headmate observes and shares internally. */
     frontPresence: frontingPresence
@@ -225,8 +223,8 @@ export type headmate = {
     /** An event-triggered system of responses that simulate changes in personality, attributes, fronting, etc. */
     reactions: reaction
 
-    /** The name of this headmate. A singlet should always have a name. If undefined, the system name should be used,
-     * and if undefined, "Player" should be used. */
+    /** The name of this headmate. A singlet should always have a name. If undefined, the system name gets used, and if
+     * undefined, "Player" gets used. */
     name: string | undefined
 
     /** A tagging system of changing effects, scoped to qualities. */
@@ -338,9 +336,28 @@ export type game = {
 
     /** The story branching state of data. */
     story: {
-        fork: fork,
-        links: forkLink[],
+        fork: fork
+        links: forkLink[]
         forks: fork[]
+        callbacks: {
+            /** After the fork finishes loading. Not after rendering; use requestAnimationFrame for that. Use this when
+             * reading elements of this fork in the DOM is preferential. TODO: make this the default. */
+            afterLoad: (() => {})[]
+
+            /** When the fork would unload, from closing the game or by any means. Use this to de-register global event
+             * listeners, or undo any changes to existing elements in the page outside of the current fork. */
+            beforeUnload: (() => {})[]
+
+            /** After the user saves changes to their preferences. Use this to update derived logic. TODO: implement. */
+            afterPreferenceChanged:  (() => {})[]
+
+            /** Before the user saves. Use this to manage story state as needed. TODO: implement. */
+            beforeSave: ((manual?: boolean) => {})[]
+
+            /** After any fork loads. This is the global version that doesn't get cleared and runs for all forks. It
+             * runs before non-global after-load logic. */
+            globalAfterLoad:  (() => {})[]
+        }
     }
 
     /** A log of unexpected warnings and errors produced by the game parser or elsewhere. */

@@ -22,7 +22,8 @@ export function initPreferencesPage(): void {
     })
 
     columnWidth.addEventListener("change", () => {
-        storage.display.columnWidth = columnWidth.value
+        storage.display.columnWidth = columnWidth.value === '50rem'
+            ? undefined : columnWidth.value
         saveToLocalStorage()
         applyDisplayPreferences()
     })
@@ -61,7 +62,7 @@ export function initPreferencesPage(): void {
     })
 
     bundledFonts.addEventListener("change", () => {
-        storage.display.font = bundledFonts.value
+        storage.display.font = !bundledFonts.value ? undefined : bundledFonts.value
         writeInFont.setSelection(bundledFonts.value)
         saveToLocalStorage()
         applyDisplayPreferences()
@@ -73,7 +74,7 @@ export function initPreferencesPage(): void {
         const index = bundleFontList.findIndex(entry => entry[0].replaceAll(' ', '').toLowerCase() === toFindInBundle)
 
         if (index === -1) {
-            storage.display.font = trimmed
+            storage.display.font = trimmed === '' ? undefined : trimmed
             defaultFontOption.selected = true            
         } else {
             storage.display.font = bundleFontList[index][0]
@@ -106,7 +107,8 @@ export function initPreferencesPage(): void {
     })
 
     paragraphMargin.addEventListener("change", () => {
-        storage.display.paragraphMargin = paragraphMargin.value
+        storage.display.paragraphMargin = paragraphMargin.value === ''
+            ? undefined : paragraphMargin.value
         saveToLocalStorage()
         applyDisplayPreferences()
     })
@@ -118,14 +120,16 @@ export function initPreferencesPage(): void {
         const option = document.createElement("option")
         option.text = entry[0]
         option.value = entry[1]
-        if (storage.display.lineHeight === entry[1]) {
+        if (storage.display.lineHeight === entry[1] ||
+            !storage.display.lineHeight && entry[0] === 'Default') {
             option.selected = true
         }
         lineSpacing.appendChild(option)
     })
 
     lineSpacing.addEventListener("change", () => {
-        storage.display.lineHeight = lineSpacing.value
+        storage.display.lineHeight = lineSpacing.value === '1.2rem'
+            ? undefined : lineSpacing.value
         saveToLocalStorage()
         applyDisplayPreferences()
     })
@@ -137,14 +141,16 @@ export function initPreferencesPage(): void {
         const option = document.createElement("option")
         option.text = entry[0]
         option.value = entry[1]
-        if (storage.display.wordSpacing === entry[1]) {
+        if (storage.display.wordSpacing === entry[1] ||
+            !storage.display.wordSpacing && entry[1] === '') {
             option.selected = true
         }
         wordSpacing.appendChild(option)
     })
 
     wordSpacing.addEventListener("change", () => {
-        storage.display.wordSpacing = wordSpacing.value
+        storage.display.wordSpacing = wordSpacing.value === ''
+            ? undefined : wordSpacing.value
         saveToLocalStorage()
         applyDisplayPreferences()
     })
@@ -164,7 +170,8 @@ export function initPreferencesPage(): void {
     })
 
     paragraphMarking.addEventListener("change", () => {
-        storage.display.paragraphMarking = paragraphMarking.value as typeof paragraphMarkings[number]
+        storage.display.paragraphMarking = paragraphMarking.value === 'None'
+            ? undefined : paragraphMarking.value as typeof paragraphMarkings[number]
         saveToLocalStorage()
         applyDisplayPreferences()
     })
@@ -184,7 +191,8 @@ export function initPreferencesPage(): void {
     })
 
     paragraphBorder.addEventListener("change", () => {
-        storage.display.paragraphBorder = paragraphBorder.value as typeof paragraphBorders[number]
+        storage.display.paragraphBorder = paragraphBorder.value === 'None'
+            ? undefined : paragraphBorder.value as typeof paragraphBorders[number]
         saveToLocalStorage()
         applyDisplayPreferences()
     })
@@ -225,11 +233,14 @@ export function initPreferencesPage(): void {
         saveToLocalStorage()
     })
     focusSize?.addEventListener('change', () => {
-        storage.display.readingFocus!.size = focusSize.value
+        storage.display.readingFocus!.size = focusSize.value === '-0.1rem' || focusSize.value === '4rem'
+            ? undefined : focusSize.value
         saveToLocalStorage()
     })
     focusBehavior?.addEventListener('change', () => {
-        storage.display.readingFocus!.behavior = focusBehavior.value as typeof readFocusBehaviorHighlight[number] | typeof readFocusBehaviorRuler[number]
+        const behaviorCasted = focusBehavior.value as typeof readFocusBehaviorHighlight[number] | typeof readFocusBehaviorRuler[number]
+        storage.display.readingFocus!.behavior = behaviorCasted === 'Highlight side' || behaviorCasted === 'Color inside'
+            ? undefined : behaviorCasted
         _setFocusPreferenceControls()
         saveToLocalStorage()
     })
@@ -248,8 +259,8 @@ export function initPreferencesPage(): void {
     letterSpacings.forEach(entry => {
         const option = document.createElement("option")
         option.text = entry[0]
-        option.value = entry[0]
-        if (storage.display.letterSpacing === entry[0] ||
+        option.value = entry[1]
+        if (storage.display.letterSpacing === entry[1] ||
             (!storage.display.letterSpacing && option.value === '')) {
             option.selected = true
         }
@@ -280,7 +291,7 @@ export function initPreferencesPage(): void {
     })
 
     fontBolding.addEventListener("change", () => {
-        storage.display.fontWeight = (fontBolding.value === '')
+        storage.display.fontWeight = (fontBolding.value === '400')
             ? undefined
             : fontBolding.value
 
@@ -385,7 +396,7 @@ export function initPreferencesPage(): void {
     // The minimums for the CSS filters are set to keep the site usable for sighted users fidgeting with controls.
     const items = [
         ['prefsZoom', `${storage.display.zoom ?? defaultZoom()}`, (newValue: number) => {
-            storage.display.zoom = Math.min(Math.max(newValue ?? 1.5, 0.8), 4)
+            storage.display.zoom = Math.min(Math.max(newValue ?? defaultZoom(), 0.8), 4)
         }],
         ['prefsFilterContrast', `${storage.display.readFilterContrast ?? '100'}`, (newValue: number) => {
             storage.display.readFilterContrast = Math.min(Math.max(newValue ?? 100, 20), 200)
@@ -465,7 +476,7 @@ export function initPreferencesPage(): void {
     const prefsDisabledControls = document.getElementById('prefsDisabledControls') as HTMLInputElement
     prefsDisabledControls.checked = storage.display.showDisabledStatus ?? false
     prefsDisabledControls?.addEventListener('change', () => {
-        storage.display.showDisabledStatus = prefsDisabledControls.checked
+        storage.display.showDisabledStatus = prefsDisabledControls.checked === true ? true : undefined
         saveToLocalStorage()
         applyDisplayPreferences()
     })

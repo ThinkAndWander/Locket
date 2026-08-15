@@ -38,7 +38,14 @@ export function init(): void {
                 contentRaw: ''
             },
             links: [],
-            forks: []
+            forks: [],
+            callbacks: {
+                afterLoad: [],
+                afterPreferenceChanged: [],
+                beforeSave: [],
+                beforeUnload: [],
+                globalAfterLoad: []
+            }
         },
         appOptions: {
             blockedTriggers: [],
