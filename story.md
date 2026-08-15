@@ -140,9 +140,9 @@ game.story.callbacks.afterLoad.push(() => {
         const pronouns3p = copy.querySelector('#inputPronouns3P')
         pronouns3p.id += String(idCount)
         const mainPronouns = ['They', 'She', 'He', 'It', 'Fae', 'Xe', 'Ae']
-        const unusuals = ['Co', 'Thon', 'Per', 'Hu', 'One', 'E', 'Ey', 'Ve', 'Vi', 'Ze']
+        const unusuals = ['Co', 'Thon', 'Per', 'Hu', 'One', ['E', 'e_old'], 'E', 'Ey', 'Ve', 'Vi', 'Ze']
         const mainPronouns2 = ['them', 'her', 'him', 'it', 'faer', 'xem', 'aer']
-        const unusuals2 = ['co', 'thon', 'per', 'hum', 'one', 'em', 'em', 'ver', 'vir', 'zir']
+        const unusuals2 = ['co', 'thon', 'per', 'hum', 'one', 'em/es', 'em/eir', 'em', 'ver', 'vir', 'zir']
         const doublePronouns = []
         const triplePronouns = []
         const childElementsToAppend = []
@@ -171,8 +171,9 @@ game.story.callbacks.afterLoad.push(() => {
         })
         unusuals.forEach((pronoun, i) => {
             const option = document.createElement('OPTION')
-            option.text = pronoun + '/' + unusuals2[i]
-            option.value = pronoun.toLowerCase()
+            option.text = (Array.isArray(pronoun) ? pronoun[0] : pronoun)
+                + '/' + unusuals2[i]
+            option.value = Array.isArray(pronoun) ? pronoun[1] : pronoun.toLowerCase()
             childElementsToAppend.push(option)
         })
         childElementsToAppend.push(document.createElement('HR'))
